@@ -1,0 +1,5 @@
+/* Theme styles are imported via main.jsx:
+   - theme/tokens.css  (design tokens)
+   - theme/global.css  (reset + base styles)
+   - theme/animations.css (keyframes)
+*/

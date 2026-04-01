@@ -1,0 +1,118 @@
+/* ============================================
+   MAGMA Reception App — Design Tokens
+   Framer-style dark theme
+   ============================================ */
+
+:root {
+  /* ── Backgrounds ── */
+  --bg-deep: #0a0a0f;
+  --bg-navy: #0d1117;
+  --bg-card: #161b22;
+  --bg-card-hover: #21262d;
+  --bg-elevated: #1c2128;
+  --bg-surface: #13161b;
+  --bg-overlay: rgba(10, 10, 15, 0.85);
+
+  /* ── Accents ── */
+  --accent-cyan: #00d4ff;
+  --accent-magenta: #ff006e;
+  --accent-green: #00e676;
+  --accent-amber: #ffab00;
+  --accent-red: #ff3d5a;
+  --accent-purple: #a855f7;
+
+  /* Accent with alpha (for glows / overlays) */
+  --accent-cyan-10: rgba(0, 212, 255, 0.1);
+  --accent-cyan-20: rgba(0, 212, 255, 0.2);
+  --accent-cyan-40: rgba(0, 212, 255, 0.4);
+  --accent-magenta-10: rgba(255, 0, 110, 0.1);
+  --accent-magenta-20: rgba(255, 0, 110, 0.2);
+  --accent-green-10: rgba(0, 230, 118, 0.1);
+  --accent-green-20: rgba(0, 230, 118, 0.2);
+  --accent-amber-10: rgba(255, 171, 0, 0.1);
+  --accent-red-10: rgba(255, 61, 90, 0.1);
+
+  /* ── Text ── */
+  --text-primary: #e6edf3;
+  --text-muted: #8b949e;
+  --text-dim: #484f58;
+  --text-inverse: #0a0a0f;
+
+  /* ── Borders ── */
+  --border-default: rgba(255, 255, 255, 0.06);
+  --border-subtle: rgba(255, 255, 255, 0.03);
+  --border-accent: rgba(0, 212, 255, 0.25);
+
+  /* ── Glassmorphism ── */
+  --glass-bg: rgba(22, 27, 34, 0.6);
+  --glass-bg-heavy: rgba(22, 27, 34, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 16px;
+  --glass-blur-heavy: 24px;
+
+  /* ── Spacing scale (4px base) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Border radius ── */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.7);
+
+  /* ── Glow effects ── */
+  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
+  --glow-magenta: 0 0 20px rgba(255, 0, 110, 0.3), 0 0 60px rgba(255, 0, 110, 0.1);
+  --glow-green: 0 0 20px rgba(0, 230, 118, 0.3), 0 0 60px rgba(0, 230, 118, 0.1);
+  --glow-amber: 0 0 20px rgba(255, 171, 0, 0.3), 0 0 60px rgba(255, 171, 0, 0.1);
+  --glow-sm-cyan: 0 0 8px rgba(0, 212, 255, 0.25);
+
+  /* ── Typography ── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, Consolas, monospace;
+
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.8125rem;  /* 13px */
+  --text-base: 0.875rem; /* 14px */
+  --text-md: 1rem;       /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --leading-tight: 1.2;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  /* ── Transitions ── */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-slow: 400ms;
+
+  /* ── Layout ── */
+  --sidebar-width: 250px;
+  --sidebar-collapsed: 70px;
+  --topbar-height: 64px;
+}
