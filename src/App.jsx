@@ -150,11 +150,19 @@ export default function App() {
     async function init() {
       try {
         await initializeMsal();
-        const accounts = msalInstance.getAllAccounts();
-        if (accounts.length > 0) {
-          msalInstance.setActiveAccount(accounts[0]);
-          setUser(accounts[0]);
+        // Handle redirect response (comes back from Microsoft login)
+        const response = await msalInstance.handleRedirectPromise();
+        if (response) {
+          msalInstance.setActiveAccount(response.account);
+          setUser(response.account);
           setIsAuthenticated(true);
+        } else {
+          const accounts = msalInstance.getAllAccounts();
+          if (accounts.length > 0) {
+            msalInstance.setActiveAccount(accounts[0]);
+            setUser(accounts[0]);
+            setIsAuthenticated(true);
+          }
         }
       } catch (err) {
         console.error('MSAL init error:', err);
@@ -169,14 +177,10 @@ export default function App() {
     setLoading(true);
     setLoginError(null);
     try {
-      const response = await msalInstance.loginPopup(loginRequest);
-      msalInstance.setActiveAccount(response.account);
-      setUser(response.account);
-      setIsAuthenticated(true);
+      await msalInstance.loginRedirect(loginRequest);
     } catch (err) {
       console.error('Login error:', err);
       setLoginError(err.message || 'Login failed. Please try again.');
-    } finally {
       setLoading(false);
     }
   };
