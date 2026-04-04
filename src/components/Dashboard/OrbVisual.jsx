@@ -288,7 +288,7 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: 380, overflow: 'hidden' }}>
+    <div style={{ position: 'relative', width: '100%', height: 420 }}>
       <Canvas
         camera={{ position: [0, 0, 4.5], fov: 45 }}
         style={{ background: 'transparent' }}
@@ -315,7 +315,7 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
         />
       ))}
 
-      {/* CSS animations for orbiting */}
+      {/* CSS animations for orbiting far out in the space around the globe */}
       <style>{`
         .hud-orbit {
           top: 50%;
@@ -323,14 +323,13 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
           transform-origin: center center;
         }
         ${hudItems.map((_, i) => {
-          // Distribute items evenly around the globe
           const count = hudItems.length;
           const startAngle = (360 / count) * i;
-          // Orbit radius varies by position — elliptical
-          const rx = 42; // % horizontal
-          const ry = 38; // % vertical
-          const duration = 30 + i * 2; // slightly different speeds
-          const bobDuration = 3 + i * 0.5;
+          // Wide elliptical orbit — pills stay in the dark space, not on the globe
+          const rx = 240; // pixels horizontal (far outside the globe)
+          const ry = 155; // pixels vertical
+          const duration = 45 + i * 3; // slow, different speeds so they don't bunch
+          const bobDuration = 4 + i * 0.7;
 
           return `
             .hud-orbit-${i} {
@@ -339,15 +338,15 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
                 hud-bob-${i} ${bobDuration}s ease-in-out infinite;
             }
             @keyframes hud-orbit-${i} {
-              0% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle) * Math.PI / 180) * rx}%, ${Math.sin((startAngle) * Math.PI / 180) * ry}%); }
-              25% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 90) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 90) * Math.PI / 180) * ry}%); }
-              50% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 180) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 180) * Math.PI / 180) * ry}%); }
-              75% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 270) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 270) * Math.PI / 180) * ry}%); }
-              100% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 360) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 360) * Math.PI / 180) * ry}%); }
+              0%   { transform: translate(-50%, -50%) translate(${Math.cos((startAngle) * Math.PI / 180) * rx}px, ${Math.sin((startAngle) * Math.PI / 180) * ry}px); }
+              25%  { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 90) * Math.PI / 180) * rx}px, ${Math.sin((startAngle + 90) * Math.PI / 180) * ry}px); }
+              50%  { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 180) * Math.PI / 180) * rx}px, ${Math.sin((startAngle + 180) * Math.PI / 180) * ry}px); }
+              75%  { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 270) * Math.PI / 180) * rx}px, ${Math.sin((startAngle + 270) * Math.PI / 180) * ry}px); }
+              100% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 360) * Math.PI / 180) * rx}px, ${Math.sin((startAngle + 360) * Math.PI / 180) * ry}px); }
             }
             @keyframes hud-bob-${i} {
               0%, 100% { margin-top: 0px; }
-              50% { margin-top: ${6 + i * 2}px; }
+              50% { margin-top: ${5 + i * 2}px; }
             }
           `;
         }).join('\n')}
