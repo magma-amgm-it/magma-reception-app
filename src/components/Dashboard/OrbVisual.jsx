@@ -247,14 +247,48 @@ function OrbRings() {
   );
 }
 
+// ─── Floating HUD stat pill ───
+function HudPill({ value, label, color, orbitClass }) {
+  return (
+    <div className={orbitClass} style={{
+      position: 'absolute', pointerEvents: 'none',
+      textAlign: 'center', whiteSpace: 'nowrap',
+    }}>
+      <div style={{
+        background: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(8px)',
+        border: `1px solid ${color}30`, borderRadius: 10,
+        padding: '8px 16px', display: 'inline-block',
+        boxShadow: `0 0 20px ${color}15`,
+      }}>
+        <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1, textShadow: `0 0 12px ${color}60` }}>
+          {value}
+        </div>
+        <div style={{ fontSize: 9, fontWeight: 600, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 1.5, marginTop: 4 }}>
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
   const totalActions = actionItems?.total ?? 0;
-  const statusColor = healthScore >= 75 ? '#00e676' : healthScore >= 40 ? '#ffab00' : '#ff3d5a';
-  const statusGlow = healthScore >= 75 ? 'rgba(0,230,118,0.5)' : healthScore >= 40 ? 'rgba(255,171,0,0.5)' : 'rgba(255,61,90,0.5)';
-  const statusLabel = totalActions === 0 ? 'All Clear' : `${totalActions} Action${totalActions !== 1 ? 's' : ''} Needed`;
+
+  // Build floating stat items
+  const hudItems = [];
+  if (stats) {
+    hudItems.push({ value: stats.clientsThisMonth, label: 'Clients This Month', color: '#00d4ff' });
+    hudItems.push({ value: `$${stats.monthlySpend}`, label: 'Monthly Spend', color: '#00e676' });
+  }
+  if (actionItems) {
+    if (actionItems.openRequests > 0) hudItems.push({ value: actionItems.openRequests, label: 'Open Requests', color: '#a855f7' });
+    if (actionItems.lowStockItems > 0) hudItems.push({ value: actionItems.lowStockItems, label: 'Low Stock', color: '#ff3d5a' });
+    if (actionItems.pendingOrders > 0) hudItems.push({ value: actionItems.pendingOrders, label: 'Pending Orders', color: '#ffab00' });
+    if (totalActions === 0) hudItems.push({ value: '\u2713', label: 'All Clear', color: '#00e676' });
+  }
 
   return (
-    <div style={{ position: 'relative', width: '100%', height: 340 }}>
+    <div style={{ position: 'relative', width: '100%', height: 380, overflow: 'hidden' }}>
       <Canvas
         camera={{ position: [0, 0, 4.5], fov: 45 }}
         style={{ background: 'transparent' }}
@@ -270,70 +304,54 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
         <Stars radius={50} depth={30} count={600} factor={2} fade speed={0.3} />
       </Canvas>
 
-      {/* Floating stat overlays */}
-      {stats && (
-        <>
-          {/* Top left — Clients this month */}
-          <div style={{
-            position: 'absolute', top: 30, left: '8%',
-            textAlign: 'center', pointerEvents: 'none',
-          }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#00d4ff', textShadow: '0 0 20px rgba(0,212,255,0.5)' }}>
-              {stats.clientsThisMonth}
-            </div>
-            <div style={{ fontSize: 10, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Clients This Month
-            </div>
-          </div>
+      {/* Orbiting HUD pills */}
+      {hudItems.map((item, i) => (
+        <HudPill
+          key={item.label}
+          value={item.value}
+          label={item.label}
+          color={item.color}
+          orbitClass={`hud-orbit hud-orbit-${i}`}
+        />
+      ))}
 
-          {/* Top right — Monthly spend */}
-          <div style={{
-            position: 'absolute', top: 30, right: '8%',
-            textAlign: 'center', pointerEvents: 'none',
-          }}>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#00e676', textShadow: '0 0 20px rgba(0,230,118,0.5)' }}>
-              ${stats.monthlySpend}
-            </div>
-            <div style={{ fontSize: 10, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 1 }}>
-              Monthly Spend
-            </div>
-          </div>
+      {/* CSS animations for orbiting */}
+      <style>{`
+        .hud-orbit {
+          top: 50%;
+          left: 50%;
+          transform-origin: center center;
+        }
+        ${hudItems.map((_, i) => {
+          // Distribute items evenly around the globe
+          const count = hudItems.length;
+          const startAngle = (360 / count) * i;
+          // Orbit radius varies by position — elliptical
+          const rx = 42; // % horizontal
+          const ry = 38; // % vertical
+          const duration = 30 + i * 2; // slightly different speeds
+          const bobDuration = 3 + i * 0.5;
 
-          {/* Bottom center — Action items */}
-          <div style={{
-            position: 'absolute', bottom: 12, left: '50%',
-            transform: 'translateX(-50%)', textAlign: 'center', pointerEvents: 'none',
-          }}>
-            <div style={{
-              fontSize: 15, fontWeight: 700, color: statusColor,
-              textTransform: 'uppercase', letterSpacing: 2,
-              textShadow: `0 0 15px ${statusGlow}`,
-              marginBottom: 6,
-            }}>
-              {statusLabel}
-            </div>
-            {actionItems && totalActions > 0 && (
-              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
-                {actionItems.openRequests > 0 && (
-                  <span style={{ fontSize: 11, color: '#a855f7', fontWeight: 600 }}>
-                    {actionItems.openRequests} request{actionItems.openRequests !== 1 ? 's' : ''}
-                  </span>
-                )}
-                {actionItems.lowStockItems > 0 && (
-                  <span style={{ fontSize: 11, color: '#ff3d5a', fontWeight: 600 }}>
-                    {actionItems.lowStockItems} low stock
-                  </span>
-                )}
-                {actionItems.pendingOrders > 0 && (
-                  <span style={{ fontSize: 11, color: '#ffab00', fontWeight: 600 }}>
-                    {actionItems.pendingOrders} order{actionItems.pendingOrders !== 1 ? 's' : ''}
-                  </span>
-                )}
-              </div>
-            )}
-          </div>
-        </>
-      )}
+          return `
+            .hud-orbit-${i} {
+              animation:
+                hud-orbit-${i} ${duration}s linear infinite,
+                hud-bob-${i} ${bobDuration}s ease-in-out infinite;
+            }
+            @keyframes hud-orbit-${i} {
+              0% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle) * Math.PI / 180) * rx}%, ${Math.sin((startAngle) * Math.PI / 180) * ry}%); }
+              25% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 90) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 90) * Math.PI / 180) * ry}%); }
+              50% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 180) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 180) * Math.PI / 180) * ry}%); }
+              75% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 270) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 270) * Math.PI / 180) * ry}%); }
+              100% { transform: translate(-50%, -50%) translate(${Math.cos((startAngle + 360) * Math.PI / 180) * rx}%, ${Math.sin((startAngle + 360) * Math.PI / 180) * ry}%); }
+            }
+            @keyframes hud-bob-${i} {
+              0%, 100% { margin-top: 0px; }
+              50% { margin-top: ${6 + i * 2}px; }
+            }
+          `;
+        }).join('\n')}
+      `}</style>
     </div>
   );
 }
