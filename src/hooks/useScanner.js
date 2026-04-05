@@ -73,10 +73,15 @@ export function useScanner() {
     }
   }, []);
 
+  const clearLastCode = useCallback(() => {
+    setLastScannedCode(null);
+  }, []);
+
   return {
     startScanning,
     stopScanning,
     lastScannedCode,
+    clearLastCode,
     isScanning,
     error,
   };

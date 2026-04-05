@@ -118,7 +118,7 @@ export default function Inventory() {
   // ── Scanner state ──
   const [showScanner, setShowScanner] = useState(false);
   const [scanMessage, setScanMessage] = useState(null);
-  const { startScanning, stopScanning, lastScannedCode, isScanning, error: scanError } = useScanner();
+  const { startScanning, stopScanning, lastScannedCode, clearLastCode, isScanning, error: scanError } = useScanner();
 
   const items = rawData.map((item) => ({
     id: item.id,
@@ -162,11 +162,12 @@ export default function Inventory() {
 
   // ── Scanner handlers ──
   const handleOpenScanner = useCallback(async () => {
+    clearLastCode(); // Reset previous scan so it doesn't auto-trigger
     setShowScanner(true);
     setScanMessage(null);
     // Small delay to let the DOM render the scanner container
     setTimeout(() => startScanning(SCANNER_ID), 300);
-  }, [startScanning]);
+  }, [startScanning, clearLastCode]);
 
   const handleCloseScanner = useCallback(async () => {
     await stopScanning();
