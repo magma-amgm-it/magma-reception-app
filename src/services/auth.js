@@ -38,8 +38,10 @@ export async function login() {
 
 export async function logout() {
   try {
-    await msalInstance.logoutPopup({
-      postLogoutRedirectUri: window.location.origin,
+    // Use redirect (not popup) so the entire page is taken over
+    // and the user can't continue using the app after logout
+    await msalInstance.logoutRedirect({
+      postLogoutRedirectUri: window.location.origin + '/magma-reception-app/',
     });
   } catch (error) {
     console.error('Logout failed:', error);
