@@ -9,7 +9,9 @@ import {
   ShoppingCart,
   X,
   BellRing,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../hooks/useAuth';
 import './Sidebar.css';
 
 const navItems = [
@@ -22,6 +24,10 @@ const navItems = [
 
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
+  const { user, logout } = useAuth();
+
+  const userName = user?.name || 'User';
+  const userInitial = userName.charAt(0).toUpperCase();
 
   return (
     <>
@@ -171,14 +177,51 @@ export default function Sidebar() {
               ))}
             </nav>
 
-            {/* Bottom section */}
+            {/* Bottom section — logged in user */}
             <div className="sidebar-bottom">
               <div className="sidebar-user">
-                <div className="user-avatar">R</div>
-                <div className="user-info">
-                  <span className="user-name">Reception</span>
-                  <span className="user-role">Staff</span>
+                {user?.photoUrl ? (
+                  <img src={user.photoUrl} alt={userName} style={{
+                    width: 36, height: 36, borderRadius: 10, objectFit: 'cover',
+                    border: '2px solid rgba(0,212,255,0.3)',
+                  }} />
+                ) : (
+                  <div className="user-avatar">{userInitial}</div>
+                )}
+                <div className="user-info" style={{ flex: 1, minWidth: 0 }}>
+                  <span className="user-name" style={{
+                    overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    display: 'block', maxWidth: 140,
+                  }}>{userName}</span>
+                  {user?.email && (
+                    <span className="user-role" style={{
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      display: 'block', maxWidth: 140, fontSize: 11,
+                    }}>{user.email}</span>
+                  )}
                 </div>
+                <button
+                  onClick={() => { setOpen(false); logout(); }}
+                  aria-label="Sign out"
+                  title="Sign out"
+                  style={{
+                    marginLeft: 'auto', width: 34, height: 34, borderRadius: 8,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--text-muted)', cursor: 'pointer',
+                    background: 'transparent', border: 'none', flexShrink: 0,
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = '#ff3d5a';
+                    e.currentTarget.style.background = 'rgba(255,61,90,0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.background = 'transparent';
+                  }}
+                >
+                  <LogOut size={16} />
+                </button>
               </div>
             </div>
           </motion.aside>
