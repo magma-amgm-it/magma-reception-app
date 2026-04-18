@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   PlusCircle,
@@ -10,8 +10,11 @@ import {
   RefreshCw,
   X,
   Check,
+  Search,
+  Filter as FilterIcon,
+  Calendar,
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, startOfDay, endOfDay, subDays, subMonths, startOfYear, endOfYear, startOfMonth } from 'date-fns';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
 import { createPurchaseOrder } from '../services/graphApi';
@@ -107,6 +110,115 @@ function formatDate(dateStr) {
   try { return format(new Date(dateStr), 'MMM d, yyyy'); } catch { return dateStr; }
 }
 
+// ─── Filter presets ───
+const TIME_PRESETS = [
+  { key: 'all', label: 'All time' },
+  { key: '30d', label: 'Last 30 days' },
+  { key: '3m', label: 'Last 3 months' },
+  { key: 'ytd', label: 'This Year (YTD)' },
+  { key: '1y', label: 'Last year' },
+];
+
+function getDateRange(preset) {
+  const now = new Date();
+  switch (preset) {
+    case '30d':
+      return { from: startOfDay(subDays(now, 30)), to: endOfDay(now) };
+    case '3m':
+      return { from: startOfDay(subMonths(now, 3)), to: endOfDay(now) };
+    case 'ytd':
+      return { from: startOfYear(now), to: endOfDay(now) };
+    case '1y':
+      return { from: startOfDay(subMonths(now, 12)), to: endOfDay(now) };
+    default:
+      return null;
+  }
+}
+
+const STATUSES = ['Ordered', 'Shipped', 'Received', 'Delegated', 'Cancelled'];
+
+// ─── Filter card styles ───
+const ff = {
+  filterCard: {
+    background: 'var(--glass-bg)',
+    backdropFilter: 'blur(var(--glass-blur))',
+    border: '1px solid var(--glass-border)',
+    borderRadius: 'var(--radius-lg)',
+    padding: 'var(--space-5)',
+    marginBottom: 'var(--space-6)',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 'var(--space-4)',
+  },
+  searchWrap: { position: 'relative', width: '100%' },
+  searchIcon: { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' },
+  searchInput: {
+    width: '100%',
+    padding: '12px 14px 12px 44px',
+    borderRadius: 'var(--radius-md)',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid var(--glass-border)',
+    color: 'var(--text-primary)',
+    fontSize: 14,
+    outline: 'none',
+    boxSizing: 'border-box',
+  },
+  chipsRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'center',
+  },
+  chipsLabel: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: 'var(--text-dim)',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginRight: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+  chip: (active) => ({
+    padding: '7px 14px',
+    borderRadius: 999,
+    fontSize: 12,
+    fontWeight: 600,
+    cursor: 'pointer',
+    border: '1px solid',
+    borderColor: active ? '#00d4ff' : 'var(--glass-border)',
+    background: active ? 'rgba(0,212,255,0.15)' : 'transparent',
+    color: active ? '#00d4ff' : 'var(--text-muted)',
+    transition: 'all 0.15s',
+  }),
+  dropdownsRow: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+    gap: 'var(--space-3)',
+  },
+  dropdownWrap: { display: 'flex', flexDirection: 'column', gap: 4 },
+  dropdownLabel: { fontSize: 10, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: 0.5 },
+  dropdown: {
+    padding: '10px 14px',
+    borderRadius: 'var(--radius-md)',
+    background: 'rgba(255,255,255,0.04)',
+    border: '1px solid var(--glass-border)',
+    color: 'var(--text-primary)',
+    fontSize: 13,
+    outline: 'none',
+    cursor: 'pointer',
+    colorScheme: 'dark',
+    minHeight: 40,
+  },
+  activeFilterNote: {
+    fontSize: 12,
+    color: 'var(--text-dim)',
+    fontStyle: 'italic',
+    marginLeft: 8,
+  },
+};
+
 export default function PurchaseOrders() {
   const { data: rawData, loading, error, refresh } = useSharePointList('purchaseOrders');
 
@@ -159,25 +271,69 @@ export default function PurchaseOrders() {
     }
   };
 
-  const orders = rawData.map((item) => ({
+  // ── Filter state ──
+  const [search, setSearch] = useState('');
+  const [timePreset, setTimePreset] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [vendorFilter, setVendorFilter] = useState('all');
+  const [deptFilter, setDeptFilter] = useState('all');
+
+  const orders = useMemo(() => rawData.map((item) => ({
     id: item.id,
     title: item.fields?.Title || 'Untitled',
     item: item.fields?.ItemOrdered || '—',
     vendor: item.fields?.Vendor || '—',
+    department: item.fields?.ForDepartment || '—',
     status: item.fields?.OrderStatus || 'Ordered',
     cost: item.fields?.Cost ?? 0,
+    rawDate: item.fields?.DateOrdered || item.createdDateTime || null,
     dateOrdered: formatDate(item.fields?.DateOrdered),
     expectedDelivery: formatDate(item.fields?.ExpectedDelivery),
-  }));
+    notes: item.fields?.Notes || '',
+  })), [rawData]);
 
-  const totalSpend = orders.filter((o) => o.status !== 'Cancelled').reduce((sum, o) => sum + (o.cost || 0), 0);
-  const pendingCount = orders.filter((o) => o.status === 'Ordered' || o.status === 'Shipped').length;
+  // ── Apply filters ──
+  const filteredOrders = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const range = getDateRange(timePreset);
+    return orders.filter((o) => {
+      // Search (Title + Item + Vendor)
+      if (q && !(
+        o.title.toLowerCase().includes(q) ||
+        o.item.toLowerCase().includes(q) ||
+        o.vendor.toLowerCase().includes(q)
+      )) return false;
+      // Time
+      if (range && o.rawDate) {
+        const d = new Date(o.rawDate);
+        if (d < range.from || d > range.to) return false;
+      } else if (range && !o.rawDate) {
+        return false;
+      }
+      // Status
+      if (statusFilter !== 'all' && o.status !== statusFilter) return false;
+      // Vendor
+      if (vendorFilter !== 'all' && o.vendor !== vendorFilter) return false;
+      // Department
+      if (deptFilter !== 'all' && o.department !== deptFilter) return false;
+      return true;
+    });
+  }, [orders, search, timePreset, statusFilter, vendorFilter, deptFilter]);
+
+  const totalSpend = filteredOrders.filter((o) => o.status !== 'Cancelled').reduce((sum, o) => sum + (o.cost || 0), 0);
+  const pendingCount = filteredOrders.filter((o) => o.status === 'Ordered' || o.status === 'Shipped').length;
+
+  const hasActiveFilter = search || timePreset !== 'all' || statusFilter !== 'all' || vendorFilter !== 'all' || deptFilter !== 'all';
 
   const summaryCards = [
-    { label: 'Total Orders', value: orders.length, icon: ShoppingCart, color: '#00d4ff' },
-    { label: 'Total Spend', value: `$${totalSpend.toFixed(2)}`, icon: DollarSign, color: '#00e676' },
+    { label: hasActiveFilter ? 'Matching Orders' : 'Total Orders', value: filteredOrders.length, icon: ShoppingCart, color: '#00d4ff' },
+    { label: hasActiveFilter ? 'Filtered Spend' : 'Total Spend', value: `$${totalSpend.toFixed(2)}`, icon: DollarSign, color: '#00e676' },
     { label: 'Pending', value: pendingCount, icon: Clock, color: '#ffab00' },
   ];
+
+  const clearFilters = () => {
+    setSearch(''); setTimePreset('all'); setStatusFilter('all'); setVendorFilter('all'); setDeptFilter('all');
+  };
 
   if (loading && rawData.length === 0) {
     return (
@@ -235,14 +391,81 @@ export default function PurchaseOrders() {
           })}
         </motion.div>
 
+        {/* ── Filter Card ── */}
+        <motion.div style={ff.filterCard} variants={fadeInUp} custom={4}>
+          {/* Search */}
+          <div style={ff.searchWrap}>
+            <Search size={16} style={ff.searchIcon} />
+            <input
+              style={ff.searchInput}
+              placeholder="Search by title, item, or vendor..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {/* Time preset chips */}
+          <div style={ff.chipsRow}>
+            <span style={ff.chipsLabel}><Calendar size={11} /> Period:</span>
+            {TIME_PRESETS.map((p) => (
+              <button
+                key={p.key}
+                type="button"
+                style={ff.chip(timePreset === p.key)}
+                onClick={() => setTimePreset(p.key)}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Dropdowns row */}
+          <div style={ff.dropdownsRow}>
+            <div style={ff.dropdownWrap}>
+              <span style={ff.dropdownLabel}>Status</span>
+              <select style={ff.dropdown} value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <option value="all">All statuses</option>
+                {STATUSES.map((st) => <option key={st} value={st}>{st}</option>)}
+              </select>
+            </div>
+            <div style={ff.dropdownWrap}>
+              <span style={ff.dropdownLabel}>Vendor</span>
+              <select style={ff.dropdown} value={vendorFilter} onChange={(e) => setVendorFilter(e.target.value)}>
+                <option value="all">All vendors</option>
+                {vendorChoices.map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            </div>
+            <div style={ff.dropdownWrap}>
+              <span style={ff.dropdownLabel}>Department</span>
+              <select style={ff.dropdown} value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
+                <option value="all">All departments</option>
+                {deptChoices.map((d) => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            {hasActiveFilter && (
+              <div style={ff.dropdownWrap}>
+                <span style={ff.dropdownLabel}>&nbsp;</span>
+                <button
+                  type="button"
+                  style={{ ...ff.dropdown, cursor: 'pointer', color: '#ff3d5a', borderColor: 'rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                  onClick={clearFilters}
+                >
+                  <X size={14} /> Clear filters
+                </button>
+              </div>
+            )}
+          </div>
+        </motion.div>
+
         {/* Table */}
-        <motion.div style={s.tableWrap} variants={fadeInUp} custom={4}>
+        <motion.div style={s.tableWrap} variants={fadeInUp} custom={5}>
           <table style={s.table}>
             <thead>
               <tr>
                 <th style={s.th}>Order Title</th>
                 <th style={s.th}>Item</th>
                 <th style={s.th}>Vendor</th>
+                <th style={s.th}>Dept</th>
                 <th style={s.th}>Status</th>
                 <th style={s.th}>Cost</th>
                 <th style={s.th}>Date Ordered</th>
@@ -250,14 +473,23 @@ export default function PurchaseOrders() {
               </tr>
             </thead>
             <tbody>
-              {orders.length === 0 && (
-                <tr><td colSpan={7} style={{ ...s.td, textAlign: 'center', color: 'var(--text-dim)', padding: 'var(--space-8)' }}>No purchase orders found.</td></tr>
+              {filteredOrders.length === 0 && (
+                <tr>
+                  <td colSpan={8} style={{ ...s.td, textAlign: 'center', color: 'var(--text-dim)', padding: 'var(--space-8)' }}>
+                    {orders.length === 0
+                      ? 'No purchase orders found.'
+                      : hasActiveFilter
+                      ? 'No orders match your filters. Try clearing them.'
+                      : 'No orders.'}
+                  </td>
+                </tr>
               )}
-              {orders.map((order) => (
+              {filteredOrders.map((order) => (
                 <motion.tr key={order.id} style={{ cursor: 'pointer' }} whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }} transition={{ duration: 0.15 }}>
                   <td style={{ ...s.td, fontWeight: 600, color: 'var(--text-primary)' }}>{order.title}</td>
                   <td style={s.td}>{order.item}</td>
                   <td style={s.td}>{order.vendor}</td>
+                  <td style={{ ...s.td, color: 'var(--text-muted)' }}>{order.department}</td>
                   <td style={s.td}><span style={s.statusBadge(statusColor[order.status] || '#8b949e')}>{order.status}</span></td>
                   <td style={{ ...s.td, ...s.cost }}>${(order.cost || 0).toFixed(2)}</td>
                   <td style={{ ...s.td, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{order.dateOrdered}</td>
