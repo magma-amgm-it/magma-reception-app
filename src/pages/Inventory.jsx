@@ -15,13 +15,15 @@ import {
   Minus,
   Printer,
   CameraOff,
+  PlusCircle,
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
-import { updateInventoryItem } from '../services/graphApi';
+import { updateInventoryItem, createInventoryItem } from '../services/graphApi';
 import { useScanner } from '../hooks/useScanner';
 import { QR_PREFIX } from '../components/Inventory/QRSheet';
+import { QRCodeSVG } from 'qrcode.react';
 
 const categoryColor = {
   'Office Supplies': '#00d4ff',
@@ -103,6 +105,49 @@ const sc = {
 
 const SCANNER_ID = 'magma-inv-scanner';
 
+// ─── Create form styles ───
+const cr = {
+  overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20, overflow: 'auto' },
+  modal: { background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, position: 'relative', maxHeight: '90vh', overflowY: 'auto' },
+  title: { fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 },
+  closeBtn: { position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' },
+  formRow: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 },
+  formRowTwo: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 },
+  label: { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.3px' },
+  required: { color: '#ff3d5a', marginLeft: 2 },
+  input: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 42, boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 70, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' },
+  chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
+  chip: (active, color) => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--glass-border)', background: active ? color + '18' : 'transparent', color: active ? color : 'var(--text-muted)', transition: 'all 0.15s' }),
+  submitBtn: (loading, success) => ({ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, background: success ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: success ? '#00e676' : '#061218' }),
+  error: { color: '#ff3d5a', fontSize: 13, marginBottom: 12, textAlign: 'center' },
+  // QR success modal
+  qrModal: { background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 32, width: '100%', maxWidth: 420, position: 'relative', textAlign: 'center' },
+  qrWrap: { background: '#fff', padding: 20, borderRadius: 12, display: 'inline-block', marginBottom: 16, marginTop: 12 },
+  qrItemName: { fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 },
+  qrItemCat: { fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 },
+  qrItemId: { fontSize: 11, color: 'var(--text-dim)', fontFamily: 'monospace', marginBottom: 20 },
+  qrBtnRow: { display: 'flex', gap: 10 },
+  qrBtn: (primary) => ({ flex: 1, padding: 12, borderRadius: 10, border: primary ? 'none' : '1px solid var(--glass-border)', background: primary ? 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)' : 'rgba(255,255,255,0.05)', color: primary ? '#061218' : 'var(--text-primary)', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
+};
+
+const CATEGORIES = ['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Other'];
+const UNITS = ['Packs', 'Boxes', 'Cases', 'Rolls', 'Bottles', 'Units', 'Bags'];
+const VENDORS = ['Amazon', 'Instacart', 'MCS', 'Denis', 'Walmart', 'Superstore', 'Dollarama', 'Ikea', 'Other'];
+
+const initialForm = {
+  Title: '',
+  Category: '',
+  CurrentQuantity: '',
+  Unit: '',
+  MinimumThreshold: '',
+  PreferredVendor: '',
+  EstimatedCost: '',
+  Location: '',
+  Notes: '',
+};
+
 export default function Inventory() {
   const [search, setSearch] = useState('');
   const [mode, setMode] = useState('in');
@@ -119,6 +164,14 @@ export default function Inventory() {
   const [showScanner, setShowScanner] = useState(false);
   const [scanMessage, setScanMessage] = useState(null);
   const { startScanning, stopScanning, lastScannedCode, clearLastCode, isScanning, error: scanError } = useScanner();
+
+  // ── Create item state ──
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState(initialForm);
+  const [creating, setCreating] = useState(false);
+  const [createSuccess, setCreateSuccess] = useState(false);
+  const [createError, setCreateError] = useState(null);
+  const [newItem, setNewItem] = useState(null); // After creation: { id, name, category }
 
   const items = rawData.map((item) => ({
     id: item.id,
@@ -289,6 +342,102 @@ ${sortedCats.map(cat => `
     printWindow.document.close();
   }, [items]);
 
+  // ── Create item handlers ──
+  const handleOpenCreate = () => {
+    setForm(initialForm);
+    setCreateError(null);
+    setCreateSuccess(false);
+    setShowCreate(true);
+  };
+
+  const handleCloseCreate = () => {
+    if (creating) return;
+    setShowCreate(false);
+  };
+
+  const updateField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleCreate = async (e) => {
+    e?.preventDefault?.();
+    if (creating) return;
+    // Required field validation
+    if (!form.Title.trim() || !form.Category || form.CurrentQuantity === '' || !form.Unit || form.MinimumThreshold === '') {
+      setCreateError('Please fill in all required fields (marked with *)');
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const payload = {
+        Title: form.Title.trim(),
+        Category: form.Category,
+        CurrentQuantity: Number(form.CurrentQuantity),
+        Unit: form.Unit,
+        MinimumThreshold: Number(form.MinimumThreshold),
+      };
+      if (form.PreferredVendor) payload.PreferredVendor = form.PreferredVendor;
+      if (form.EstimatedCost !== '') payload.EstimatedCost = Number(form.EstimatedCost);
+      if (form.Location.trim()) payload.Location = form.Location.trim();
+      if (form.Notes.trim()) payload.Notes = form.Notes.trim();
+
+      const result = await createInventoryItem(payload);
+      setCreateSuccess(true);
+      refresh();
+      // After brief success display, open QR code success modal
+      setTimeout(() => {
+        setShowCreate(false);
+        setCreateSuccess(false);
+        setNewItem({
+          id: result.id,
+          name: payload.Title,
+          category: payload.Category,
+        });
+      }, 800);
+    } catch (err) {
+      setCreateError(err.message || 'Failed to create item');
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handlePrintSingleQR = () => {
+    if (!newItem) return;
+    const printWindow = window.open('', '_blank', 'width=500,height=600');
+    if (!printWindow) {
+      alert('Please allow popups to print QR codes');
+      return;
+    }
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(QR_PREFIX + newItem.id)}`;
+    const html = `<!DOCTYPE html>
+<html><head><title>QR: ${newItem.name}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fff; color: #1a1a1a; padding: 40px; text-align: center; }
+  .card { border: 2px solid #0078D4; border-radius: 12px; padding: 30px; max-width: 400px; margin: 0 auto; }
+  .header { color: #0078D4; font-size: 12px; letter-spacing: 1.5px; margin-bottom: 16px; font-weight: 700; }
+  img { width: 280px; height: 280px; display: block; margin: 0 auto 20px; }
+  .name { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .cat { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+  .iid { font-size: 10px; color: #999; font-family: monospace; }
+  .print-btn { margin-top: 30px; padding: 14px 28px; border-radius: 10px; background: #0078D4; color: #fff; font-weight: 700; font-size: 15px; border: none; cursor: pointer; }
+  @media print { .print-btn { display: none; } @page { margin: 0.5in; } }
+</style></head><body>
+<div class="card">
+  <div class="header">MAGMA RECEPTION INVENTORY</div>
+  <img src="${qrUrl}" alt="QR Code" />
+  <div class="name">${newItem.name}</div>
+  <div class="cat">${newItem.category}</div>
+  <div class="iid">ID: ${newItem.id}</div>
+</div>
+<button class="print-btn" onclick="window.print()">Print QR Label</button>
+</body></html>`;
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+  };
+
   const modeColor = mode === 'in' ? '#00e676' : '#ff3d5a';
   const modeLabel = mode === 'in' ? 'Check In' : 'Check Out';
 
@@ -341,6 +490,12 @@ ${sortedCats.map(cat => `
           <motion.button style={s.actionBtn} onClick={handlePrintQR}
             whileHover={{ scale: 1.04, boxShadow: '0 0 16px rgba(0,212,255,0.25)' }} whileTap={{ scale: 0.96 }}>
             <Printer size={18} /> Print QR Sheet
+          </motion.button>
+          <motion.button
+            style={{ ...s.actionBtn, background: 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: '#061218', border: 'none', fontWeight: 700 }}
+            onClick={handleOpenCreate}
+            whileHover={{ scale: 1.04, boxShadow: '0 0 18px rgba(0,212,255,0.45)' }} whileTap={{ scale: 0.96 }}>
+            <PlusCircle size={18} /> Create Item
           </motion.button>
         </motion.div>
 
@@ -437,6 +592,141 @@ ${sortedCats.map(cat => `
                   : <>{mode === 'in' ? <ArrowDownCircle size={16} /> : <ArrowUpCircle size={16} />} {modeLabel} {adjustQty} {selectedItem.unit || 'units'}</>}
               </motion.button>
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Create Item Modal ── */}
+      <AnimatePresence>
+        {showCreate && (
+          <motion.div style={cr.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && handleCloseCreate()}>
+            <motion.div style={cr.modal} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}>
+              <button style={cr.closeBtn} onClick={handleCloseCreate} disabled={creating}><X size={20} /></button>
+              <div style={cr.title}>Create New Inventory Item</div>
+              <div style={cr.subtitle}>Fields marked with <span style={cr.required}>*</span> are required</div>
+
+              <form onSubmit={handleCreate}>
+                {/* Item Name */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Item Name<span style={cr.required}>*</span></label>
+                  <input style={cr.input} placeholder="e.g. Paper 8x11"
+                    value={form.Title} onChange={(e) => updateField('Title', e.target.value)} />
+                </div>
+
+                {/* Category */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Category<span style={cr.required}>*</span></label>
+                  <div style={cr.chipRow}>
+                    {CATEGORIES.map((cat) => (
+                      <button type="button" key={cat}
+                        style={cr.chip(form.Category === cat, categoryColor[cat] || '#8b949e')}
+                        onClick={() => updateField('Category', cat)}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Current Quantity + Unit */}
+                <div style={cr.formRowTwo}>
+                  <div>
+                    <label style={cr.label}>Current Quantity<span style={cr.required}>*</span></label>
+                    <input type="number" min="0" style={cr.input} placeholder="0"
+                      value={form.CurrentQuantity} onChange={(e) => updateField('CurrentQuantity', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={cr.label}>Unit<span style={cr.required}>*</span></label>
+                    <select style={cr.input} value={form.Unit} onChange={(e) => updateField('Unit', e.target.value)}>
+                      <option value="">Choose a unit...</option>
+                      {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Minimum Threshold + Estimated Cost */}
+                <div style={cr.formRowTwo}>
+                  <div>
+                    <label style={cr.label}>Minimum Threshold<span style={cr.required}>*</span></label>
+                    <input type="number" min="0" style={cr.input} placeholder="5 (low-stock alert level)"
+                      value={form.MinimumThreshold} onChange={(e) => updateField('MinimumThreshold', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={cr.label}>Estimated Cost ($)</label>
+                    <input type="number" min="0" step="0.01" style={cr.input} placeholder="0.00"
+                      value={form.EstimatedCost} onChange={(e) => updateField('EstimatedCost', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Preferred Vendor */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Preferred Vendor</label>
+                  <div style={cr.chipRow}>
+                    {VENDORS.map((v) => (
+                      <button type="button" key={v}
+                        style={cr.chip(form.PreferredVendor === v, '#00d4ff')}
+                        onClick={() => updateField('PreferredVendor', form.PreferredVendor === v ? '' : v)}>
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Storage Location</label>
+                  <input style={cr.input} placeholder="e.g. Supply Closet A, Kitchen Cabinet"
+                    value={form.Location} onChange={(e) => updateField('Location', e.target.value)} />
+                </div>
+
+                {/* Notes */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Notes</label>
+                  <textarea style={cr.textarea} placeholder="Any special notes about this item..."
+                    value={form.Notes} onChange={(e) => updateField('Notes', e.target.value)} />
+                </div>
+
+                {createError && <div style={cr.error}>{createError}</div>}
+
+                <motion.button type="submit" style={cr.submitBtn(creating, createSuccess)} disabled={creating}
+                  whileHover={!creating ? { scale: 1.02 } : {}} whileTap={!creating ? { scale: 0.98 } : {}}>
+                  {creating ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</>
+                    : createSuccess ? <><Check size={16} /> Created!</>
+                    : <><PlusCircle size={16} /> Create Item</>}
+                </motion.button>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── QR Code Success Modal (after creation) ── */}
+      <AnimatePresence>
+        {newItem && (
+          <motion.div style={cr.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && setNewItem(null)}>
+            <motion.div style={cr.qrModal} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
+              <button style={cr.closeBtn} onClick={() => setNewItem(null)}><X size={20} /></button>
+              <div style={{ color: '#00e676', fontSize: 13, fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 }}>
+                <Check size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
+                ITEM CREATED
+              </div>
+              <div style={{ fontSize: 14, color: 'var(--text-muted)', marginBottom: 4 }}>Here's your QR code — ready to print!</div>
+              <div style={cr.qrWrap}>
+                <QRCodeSVG value={`${QR_PREFIX}${newItem.id}`} size={200} level="M" />
+              </div>
+              <div style={cr.qrItemName}>{newItem.name}</div>
+              <div style={cr.qrItemCat}>{newItem.category}</div>
+              <div style={cr.qrItemId}>ID: {newItem.id}</div>
+              <div style={cr.qrBtnRow}>
+                <button style={cr.qrBtn(false)} onClick={() => setNewItem(null)}>
+                  <X size={14} /> Close
+                </button>
+                <button style={cr.qrBtn(true)} onClick={handlePrintSingleQR}>
+                  <Printer size={14} /> Print Label
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

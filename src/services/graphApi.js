@@ -131,6 +131,15 @@ export async function updateInventoryItem(id, data) {
   });
 }
 
+export async function createInventoryItem(data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.inventory);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items`, {
+    method: 'POST',
+    body: { fields: data },
+  });
+}
+
 // --- Client Log ---
 
 export async function getClientLogEntries(filters) {
