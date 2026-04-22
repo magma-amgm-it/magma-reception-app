@@ -148,6 +148,45 @@ export async function deleteInventoryItem(id) {
   });
 }
 
+// --- Inventory Category column management ---
+
+async function getCategoryColumn() {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.inventory);
+  // Fetch all columns and find Category
+  const data = await graphFetch(`/sites/${siteId}/lists/${listId}/columns`);
+  const col = (data.value || []).find(
+    (c) => c.name === 'Category' || c.displayName === 'Category'
+  );
+  if (!col) throw new Error('Category column not found in Reception Inventory list');
+  return { siteId, listId, column: col };
+}
+
+export async function getInventoryCategoryChoices() {
+  const { column } = await getCategoryColumn();
+  return column.choice?.choices || [];
+}
+
+export async function addInventoryCategoryChoice(newCategory) {
+  const { siteId, listId, column } = await getCategoryColumn();
+  const existing = column.choice?.choices || [];
+  // De-dupe case-insensitively
+  if (existing.some((c) => c.toLowerCase() === newCategory.toLowerCase())) {
+    return existing; // Already exists — return current list
+  }
+  const updated = [...existing, newCategory];
+  await graphFetch(`/sites/${siteId}/lists/${listId}/columns/${column.id}`, {
+    method: 'PATCH',
+    body: {
+      choice: {
+        ...column.choice,
+        choices: updated,
+      },
+    },
+  });
+  return updated;
+}
+
 // --- Client Log ---
 
 export async function getClientLogEntries(filters) {

@@ -24,7 +24,7 @@ import {
 import { createPortal } from 'react-dom';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
-import { updateInventoryItem, createInventoryItem, deleteInventoryItem } from '../services/graphApi';
+import { updateInventoryItem, createInventoryItem, deleteInventoryItem, getInventoryCategoryChoices, addInventoryCategoryChoice } from '../services/graphApi';
 import { useScanner } from '../hooks/useScanner';
 import { QR_PREFIX } from '../components/Inventory/QRSheet';
 import { QRCodeSVG } from 'qrcode.react';
@@ -136,7 +136,7 @@ const cr = {
   qrBtn: (primary) => ({ flex: 1, padding: 12, borderRadius: 10, border: primary ? 'none' : '1px solid var(--glass-border)', background: primary ? 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)' : 'rgba(255,255,255,0.05)', color: primary ? '#061218' : 'var(--text-primary)', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
 };
 
-const CATEGORIES = ['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Other'];
+const FALLBACK_CATEGORIES = ['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Office Equipment', 'Supplies', 'Electronics', 'Safety / PPE', 'Documentation', 'Other'];
 const UNITS = ['Packs', 'Boxes', 'Cases', 'Rolls', 'Bottles', 'Units', 'Bags'];
 const VENDORS = ['Amazon', 'Instacart', 'MCS', 'Denis', 'Walmart', 'Superstore', 'Dollarama', 'Ikea', 'Other'];
 
@@ -176,6 +176,57 @@ export default function Inventory() {
   const [createSuccess, setCreateSuccess] = useState(false);
   const [createError, setCreateError] = useState(null);
   const [newItem, setNewItem] = useState(null); // After creation: { id, name, category }
+
+  // ── Dynamic category list ──
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+  const [showAddCategory, setShowAddCategory] = useState(null); // 'create' | 'edit' | null
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [addCategoryError, setAddCategoryError] = useState(null);
+
+  // Load categories from SharePoint on mount
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const choices = await getInventoryCategoryChoices();
+        if (!cancelled && choices.length > 0) setCategories(choices);
+      } catch (err) {
+        console.warn('Could not load category choices — using fallback list:', err.message);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const handleAddNewCategory = async (context) => {
+    const name = newCategoryName.trim();
+    if (!name) {
+      setAddCategoryError('Category name cannot be empty');
+      return;
+    }
+    if (categories.some((c) => c.toLowerCase() === name.toLowerCase())) {
+      setAddCategoryError('That category already exists');
+      return;
+    }
+    setAddingCategory(true);
+    setAddCategoryError(null);
+    try {
+      const updated = await addInventoryCategoryChoice(name);
+      setCategories(updated);
+      // Auto-select the new category in whichever form is open
+      if (context === 'create') {
+        setForm((prev) => ({ ...prev, Category: name }));
+      } else if (context === 'edit') {
+        setEditForm((prev) => ({ ...prev, Category: name }));
+      }
+      setShowAddCategory(null);
+      setNewCategoryName('');
+    } catch (err) {
+      setAddCategoryError(err.message || 'Failed to add category (check permissions)');
+    } finally {
+      setAddingCategory(false);
+    }
+  };
 
   // ── Edit item state ──
   const [showEdit, setShowEdit] = useState(false);
@@ -744,14 +795,47 @@ ${sortedCats.map(cat => `
                 <div style={cr.formRow}>
                   <label style={cr.label}>Category<span style={cr.required}>*</span></label>
                   <div style={cr.chipRow}>
-                    {CATEGORIES.map((cat) => (
+                    {categories.map((cat) => (
                       <button type="button" key={cat}
                         style={cr.chip(form.Category === cat, categoryColor[cat] || '#8b949e')}
                         onClick={() => updateField('Category', cat)}>
                         {cat}
                       </button>
                     ))}
+                    {showAddCategory !== 'create' ? (
+                      <button type="button"
+                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        onClick={() => { setShowAddCategory('create'); setAddCategoryError(null); setNewCategoryName(''); }}>
+                        <Plus size={12} /> New
+                      </button>
+                    ) : null}
                   </div>
+                  {showAddCategory === 'create' && (
+                    <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                        placeholder="New category name..."
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        autoFocus
+                        disabled={addingCategory}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewCategory('create'); } }}
+                      />
+                      <button type="button"
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
+                        onClick={() => handleAddNewCategory('create')} disabled={addingCategory}>
+                        {addingCategory ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
+                      </button>
+                      <button type="button"
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        onClick={() => { setShowAddCategory(null); setNewCategoryName(''); setAddCategoryError(null); }} disabled={addingCategory}>
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                  {addCategoryError && showAddCategory === 'create' && (
+                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
+                  )}
                 </div>
 
                 {/* Current Quantity + Unit */}
@@ -881,14 +965,47 @@ ${sortedCats.map(cat => `
                 <div style={cr.formRow}>
                   <label style={cr.label}>Category<span style={cr.required}>*</span></label>
                   <div style={cr.chipRow}>
-                    {['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Office Equipment', 'Supplies', 'Electronics', 'Safety / PPE', 'Documentation', 'Other'].map((cat) => (
+                    {categories.map((cat) => (
                       <button type="button" key={cat}
                         style={cr.chip(editForm.Category === cat, categoryColor[cat] || '#8b949e')}
                         onClick={() => updateEditField('Category', cat)}>
                         {cat}
                       </button>
                     ))}
+                    {showAddCategory !== 'edit' ? (
+                      <button type="button"
+                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                        onClick={() => { setShowAddCategory('edit'); setAddCategoryError(null); setNewCategoryName(''); }}>
+                        <Plus size={12} /> New
+                      </button>
+                    ) : null}
                   </div>
+                  {showAddCategory === 'edit' && (
+                    <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <input
+                        style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                        placeholder="New category name..."
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        autoFocus
+                        disabled={addingCategory}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewCategory('edit'); } }}
+                      />
+                      <button type="button"
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
+                        onClick={() => handleAddNewCategory('edit')} disabled={addingCategory}>
+                        {addingCategory ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
+                      </button>
+                      <button type="button"
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        onClick={() => { setShowAddCategory(null); setNewCategoryName(''); setAddCategoryError(null); }} disabled={addingCategory}>
+                        <X size={12} />
+                      </button>
+                    </div>
+                  )}
+                  {addCategoryError && showAddCategory === 'edit' && (
+                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
+                  )}
                 </div>
 
                 {/* Current Quantity + Unit */}
