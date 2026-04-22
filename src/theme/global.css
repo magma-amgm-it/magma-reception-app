@@ -143,3 +143,30 @@ img, svg {
 ul, ol {
   list-style: none;
 }
+
+/* ── Native select dropdown: force dark theme ──
+   colorScheme: dark inline style isn't reliable when OS is in light mode,
+   so we explicitly style option elements. Supported in Chromium (Edge, Chrome)
+   and Firefox 102+. */
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: #14141F;
+  color: #E8E8EC;
+}
+
+select option:checked,
+select option:hover {
+  background-color: #00d4ff;
+  color: #0A0A0F;
+}
+
+/* Date and number input native UI (calendar icon, spinner) in dark mode */
+input[type="date"],
+input[type="month"],
+input[type="number"],
+input[type="time"] {
+  color-scheme: dark;
+}
