@@ -63,8 +63,10 @@ const f = {
   },
   closeBtn: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' },
-  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none' },
+  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none', colorScheme: 'dark', boxSizing: 'border-box' },
   textarea: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 70, outline: 'none', resize: 'vertical' },
+  selectRow: { display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' },
+  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 },
   group: { marginBottom: 20 },
   row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 },
   chips: { display: 'flex', flexWrap: 'wrap', gap: 8 },
@@ -569,13 +571,15 @@ export default function PurchaseOrders() {
 
               <div style={f.group}>
                 <label style={f.label}>Vendor *</label>
-                <div style={f.chips}>
-                  {vendors.map(v => (
-                    <button type="button" key={v} style={f.chip(poVendor === v, vendorColor[v] || '#00d4ff')} onClick={() => setPoVendor(v)}>{v}</button>
-                  ))}
+                <div style={f.selectRow}>
+                  <select style={{ ...f.input, flex: 1, minWidth: 180 }}
+                    value={poVendor}
+                    onChange={(e) => setPoVendor(e.target.value)}>
+                    <option value="">Choose a vendor...</option>
+                    {vendors.map((v) => <option key={v} value={v}>{v}</option>)}
+                  </select>
                   {!showAddVendor && (
-                    <button type="button"
-                      style={{ ...f.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                    <button type="button" style={f.addNewBtn}
                       onClick={() => { setShowAddVendor(true); setAddVendorError(null); setNewVendorName(''); }}>
                       + New
                     </button>

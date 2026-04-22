@@ -120,7 +120,9 @@ const cr = {
   formRowTwo: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 },
   label: { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.3px' },
   required: { color: '#ff3d5a', marginLeft: 2 },
-  input: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 42, boxSizing: 'border-box' },
+  input: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 42, boxSizing: 'border-box', colorScheme: 'dark' },
+  selectRow: { display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' },
+  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' },
   textarea: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 70, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' },
   chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
   chip: (active, color) => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--glass-border)', background: active ? color + '18' : 'transparent', color: active ? color : 'var(--text-muted)', transition: 'all 0.15s' }),
@@ -838,21 +840,19 @@ ${sortedCats.map(cat => `
                 {/* Category */}
                 <div style={cr.formRow}>
                   <label style={cr.label}>Category<span style={cr.required}>*</span></label>
-                  <div style={cr.chipRow}>
-                    {categories.map((cat) => (
-                      <button type="button" key={cat}
-                        style={cr.chip(form.Category === cat, categoryColor[cat] || '#8b949e')}
-                        onClick={() => updateField('Category', cat)}>
-                        {cat}
-                      </button>
-                    ))}
-                    {showAddCategory !== 'create' ? (
-                      <button type="button"
-                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  <div style={cr.selectRow}>
+                    <select style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                      value={form.Category}
+                      onChange={(e) => updateField('Category', e.target.value)}>
+                      <option value="">Choose a category...</option>
+                      {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    {showAddCategory !== 'create' && (
+                      <button type="button" style={cr.addNewBtn}
                         onClick={() => { setShowAddCategory('create'); setAddCategoryError(null); setNewCategoryName(''); }}>
                         <Plus size={12} /> New
                       </button>
-                    ) : null}
+                    )}
                   </div>
                   {showAddCategory === 'create' && (
                     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -915,21 +915,19 @@ ${sortedCats.map(cat => `
                 {/* Preferred Vendor */}
                 <div style={cr.formRow}>
                   <label style={cr.label}>Preferred Vendor</label>
-                  <div style={cr.chipRow}>
-                    {vendors.map((v) => (
-                      <button type="button" key={v}
-                        style={cr.chip(form.PreferredVendor === v, '#00d4ff')}
-                        onClick={() => updateField('PreferredVendor', form.PreferredVendor === v ? '' : v)}>
-                        {v}
-                      </button>
-                    ))}
-                    {showAddVendor !== 'create' ? (
-                      <button type="button"
-                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  <div style={cr.selectRow}>
+                    <select style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                      value={form.PreferredVendor}
+                      onChange={(e) => updateField('PreferredVendor', e.target.value)}>
+                      <option value="">— None —</option>
+                      {vendors.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                    {showAddVendor !== 'create' && (
+                      <button type="button" style={cr.addNewBtn}
                         onClick={() => { setShowAddVendor('create'); setAddVendorError(null); setNewVendorName(''); }}>
                         <Plus size={12} /> New
                       </button>
-                    ) : null}
+                    )}
                   </div>
                   {showAddVendor === 'create' && (
                     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1041,21 +1039,19 @@ ${sortedCats.map(cat => `
                 {/* Category */}
                 <div style={cr.formRow}>
                   <label style={cr.label}>Category<span style={cr.required}>*</span></label>
-                  <div style={cr.chipRow}>
-                    {categories.map((cat) => (
-                      <button type="button" key={cat}
-                        style={cr.chip(editForm.Category === cat, categoryColor[cat] || '#8b949e')}
-                        onClick={() => updateEditField('Category', cat)}>
-                        {cat}
-                      </button>
-                    ))}
-                    {showAddCategory !== 'edit' ? (
-                      <button type="button"
-                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  <div style={cr.selectRow}>
+                    <select style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                      value={editForm.Category}
+                      onChange={(e) => updateEditField('Category', e.target.value)}>
+                      <option value="">Choose a category...</option>
+                      {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    {showAddCategory !== 'edit' && (
+                      <button type="button" style={cr.addNewBtn}
                         onClick={() => { setShowAddCategory('edit'); setAddCategoryError(null); setNewCategoryName(''); }}>
                         <Plus size={12} /> New
                       </button>
-                    ) : null}
+                    )}
                   </div>
                   {showAddCategory === 'edit' && (
                     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -1118,21 +1114,19 @@ ${sortedCats.map(cat => `
                 {/* Vendor */}
                 <div style={cr.formRow}>
                   <label style={cr.label}>Preferred Vendor</label>
-                  <div style={cr.chipRow}>
-                    {vendors.map((v) => (
-                      <button type="button" key={v}
-                        style={cr.chip(editForm.PreferredVendor === v, '#00d4ff')}
-                        onClick={() => updateEditField('PreferredVendor', editForm.PreferredVendor === v ? '' : v)}>
-                        {v}
-                      </button>
-                    ))}
-                    {showAddVendor !== 'edit' ? (
-                      <button type="button"
-                        style={{ ...cr.chip(false, '#00d4ff'), borderStyle: 'dashed', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                  <div style={cr.selectRow}>
+                    <select style={{ ...cr.input, flex: 1, minWidth: 180 }}
+                      value={editForm.PreferredVendor}
+                      onChange={(e) => updateEditField('PreferredVendor', e.target.value)}>
+                      <option value="">— None —</option>
+                      {vendors.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                    {showAddVendor !== 'edit' && (
+                      <button type="button" style={cr.addNewBtn}
                         onClick={() => { setShowAddVendor('edit'); setAddVendorError(null); setNewVendorName(''); }}>
                         <Plus size={12} /> New
                       </button>
-                    ) : null}
+                    )}
                   </div>
                   {showAddVendor === 'edit' && (
                     <div style={{ marginTop: 8, display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
