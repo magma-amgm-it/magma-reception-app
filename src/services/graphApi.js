@@ -140,6 +140,14 @@ export async function createInventoryItem(data) {
   });
 }
 
+export async function deleteInventoryItem(id) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.inventory);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // --- Client Log ---
 
 export async function getClientLogEntries(filters) {

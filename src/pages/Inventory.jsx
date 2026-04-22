@@ -16,11 +16,15 @@ import {
   Printer,
   CameraOff,
   PlusCircle,
+  Pencil,
+  Trash2,
+  Save,
+  ArrowLeft,
 } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
-import { updateInventoryItem, createInventoryItem } from '../services/graphApi';
+import { updateInventoryItem, createInventoryItem, deleteInventoryItem } from '../services/graphApi';
 import { useScanner } from '../hooks/useScanner';
 import { QR_PREFIX } from '../components/Inventory/QRSheet';
 import { QRCodeSVG } from 'qrcode.react';
@@ -173,6 +177,18 @@ export default function Inventory() {
   const [createError, setCreateError] = useState(null);
   const [newItem, setNewItem] = useState(null); // After creation: { id, name, category }
 
+  // ── Edit item state ──
+  const [showEdit, setShowEdit] = useState(false);
+  const [editForm, setEditForm] = useState(initialForm);
+  const [editingItemId, setEditingItemId] = useState(null);
+  const [editingItemName, setEditingItemName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleting, setDeleting] = useState(false);
+
   const items = rawData.map((item) => ({
     id: item.id,
     name: item.fields?.Title || 'Unnamed',
@@ -181,6 +197,9 @@ export default function Inventory() {
     threshold: item.fields?.MinimumThreshold ?? 0,
     vendor: item.fields?.PreferredVendor || '—',
     unit: item.fields?.Unit || '',
+    location: item.fields?.Location || '',
+    estimatedCost: item.fields?.EstimatedCost ?? '',
+    notes: item.fields?.Notes || '',
   }));
 
   const filtered = items.filter((item) =>
@@ -438,6 +457,99 @@ ${sortedCats.map(cat => `
     printWindow.document.close();
   };
 
+  // ── Edit item handlers ──
+  const handleOpenEdit = () => {
+    if (!selectedItem) return;
+    // Find full item data from rawData
+    const raw = rawData.find((x) => x.id === selectedItem.id);
+    const fld = raw?.fields || {};
+    setEditForm({
+      Title: fld.Title || selectedItem.name || '',
+      Category: fld.Category || selectedItem.category || '',
+      CurrentQuantity: String(fld.CurrentQuantity ?? selectedItem.quantity ?? ''),
+      Unit: fld.Unit || selectedItem.unit || '',
+      MinimumThreshold: String(fld.MinimumThreshold ?? selectedItem.threshold ?? ''),
+      PreferredVendor: fld.PreferredVendor || (selectedItem.vendor !== '—' ? selectedItem.vendor : '') || '',
+      EstimatedCost: fld.EstimatedCost != null ? String(fld.EstimatedCost) : '',
+      Location: fld.Location || '',
+      Notes: fld.Notes || '',
+    });
+    setEditingItemId(selectedItem.id);
+    setEditingItemName(fld.Title || selectedItem.name);
+    setSaveError(null);
+    setSaveSuccess(false);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText('');
+    setSelectedItem(null); // Close quantity modal
+    setShowEdit(true);     // Open edit modal
+  };
+
+  const handleCloseEdit = () => {
+    if (saving || deleting) return;
+    setShowEdit(false);
+    setShowDeleteConfirm(false);
+  };
+
+  const updateEditField = (key, value) => {
+    setEditForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEdit = async (e) => {
+    e?.preventDefault?.();
+    if (saving) return;
+    // Required field validation
+    if (!editForm.Title.trim() || !editForm.Category || editForm.CurrentQuantity === '' || !editForm.Unit || editForm.MinimumThreshold === '') {
+      setSaveError('Please fill in all required fields (marked with *)');
+      return;
+    }
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const payload = {
+        Title: editForm.Title.trim(),
+        Category: editForm.Category,
+        CurrentQuantity: Number(editForm.CurrentQuantity),
+        Unit: editForm.Unit,
+        MinimumThreshold: Number(editForm.MinimumThreshold),
+        PreferredVendor: editForm.PreferredVendor || null,
+        EstimatedCost: editForm.EstimatedCost !== '' ? Number(editForm.EstimatedCost) : null,
+        Location: editForm.Location.trim() || null,
+        Notes: editForm.Notes.trim() || null,
+      };
+      await updateInventoryItem(editingItemId, payload);
+      setSaveSuccess(true);
+      refresh();
+      setTimeout(() => {
+        setShowEdit(false);
+        setSaveSuccess(false);
+      }, 1000);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to save changes');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (deleting) return;
+    if (deleteConfirmText.trim().toLowerCase() !== editingItemName.trim().toLowerCase()) {
+      setSaveError(`Type the item name exactly: "${editingItemName}"`);
+      return;
+    }
+    setDeleting(true);
+    setSaveError(null);
+    try {
+      await deleteInventoryItem(editingItemId);
+      refresh();
+      setShowEdit(false);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      setSaveError(err.message || 'Failed to delete item');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const modeColor = mode === 'in' ? '#00e676' : '#ff3d5a';
   const modeLabel = mode === 'in' ? 'Check In' : 'Check Out';
 
@@ -591,6 +703,19 @@ ${sortedCats.map(cat => `
                   : updateSuccess ? <><Check size={16} /> Updated!</>
                   : <>{mode === 'in' ? <ArrowDownCircle size={16} /> : <ArrowUpCircle size={16} />} {modeLabel} {adjustQty} {selectedItem.unit || 'units'}</>}
               </motion.button>
+              {/* Secondary: Edit Full Details */}
+              <motion.button
+                style={{
+                  width: '100%', padding: 12, marginTop: 10, borderRadius: 10,
+                  background: 'transparent', border: '1px solid var(--glass-border)',
+                  color: 'var(--text-muted)', fontWeight: 600, fontSize: 13,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
+                onClick={handleOpenEdit}
+                whileHover={{ scale: 1.01, borderColor: '#00d4ff', color: '#00d4ff' }}
+                whileTap={{ scale: 0.99 }}>
+                <Pencil size={14} /> Edit Full Details
+              </motion.button>
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
             </motion.div>
           </motion.div>
@@ -727,6 +852,148 @@ ${sortedCats.map(cat => `
                   <Printer size={14} /> Print Label
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Edit Item Modal ── */}
+      <AnimatePresence>
+        {showEdit && (
+          <motion.div style={cr.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && handleCloseEdit()}>
+            <motion.div style={cr.modal} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}>
+              <button style={cr.closeBtn} onClick={handleCloseEdit} disabled={saving || deleting}><X size={20} /></button>
+              <div style={cr.title}>
+                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#00d4ff' }} />
+                Edit Item
+              </div>
+              <div style={cr.subtitle}>Update any field. Fields marked with <span style={cr.required}>*</span> are required.</div>
+
+              <form onSubmit={handleSaveEdit}>
+                {/* Item Name */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Item Name<span style={cr.required}>*</span></label>
+                  <input style={cr.input} value={editForm.Title} onChange={(e) => updateEditField('Title', e.target.value)} />
+                </div>
+
+                {/* Category */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Category<span style={cr.required}>*</span></label>
+                  <div style={cr.chipRow}>
+                    {['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Office Equipment', 'Supplies', 'Electronics', 'Safety / PPE', 'Documentation', 'Other'].map((cat) => (
+                      <button type="button" key={cat}
+                        style={cr.chip(editForm.Category === cat, categoryColor[cat] || '#8b949e')}
+                        onClick={() => updateEditField('Category', cat)}>
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Current Quantity + Unit */}
+                <div style={cr.formRowTwo}>
+                  <div>
+                    <label style={cr.label}>Current Quantity<span style={cr.required}>*</span></label>
+                    <input type="number" min="0" style={cr.input}
+                      value={editForm.CurrentQuantity} onChange={(e) => updateEditField('CurrentQuantity', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={cr.label}>Unit<span style={cr.required}>*</span></label>
+                    <select style={cr.input} value={editForm.Unit} onChange={(e) => updateEditField('Unit', e.target.value)}>
+                      <option value="">Choose a unit...</option>
+                      {UNITS.map((u) => <option key={u} value={u}>{u}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Min Threshold + Estimated Cost */}
+                <div style={cr.formRowTwo}>
+                  <div>
+                    <label style={cr.label}>Minimum Threshold<span style={cr.required}>*</span></label>
+                    <input type="number" min="0" style={cr.input}
+                      value={editForm.MinimumThreshold} onChange={(e) => updateEditField('MinimumThreshold', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={cr.label}>Estimated Cost ($)</label>
+                    <input type="number" min="0" step="0.01" style={cr.input} placeholder="0.00"
+                      value={editForm.EstimatedCost} onChange={(e) => updateEditField('EstimatedCost', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Vendor */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Preferred Vendor</label>
+                  <div style={cr.chipRow}>
+                    {VENDORS.map((v) => (
+                      <button type="button" key={v}
+                        style={cr.chip(editForm.PreferredVendor === v, '#00d4ff')}
+                        onClick={() => updateEditField('PreferredVendor', editForm.PreferredVendor === v ? '' : v)}>
+                        {v}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Storage Location</label>
+                  <input style={cr.input} placeholder="e.g. Cabinet 2 — Floor 1"
+                    value={editForm.Location} onChange={(e) => updateEditField('Location', e.target.value)} />
+                </div>
+
+                {/* Notes */}
+                <div style={cr.formRow}>
+                  <label style={cr.label}>Notes</label>
+                  <textarea style={cr.textarea}
+                    value={editForm.Notes} onChange={(e) => updateEditField('Notes', e.target.value)} />
+                </div>
+
+                {saveError && <div style={cr.error}>{saveError}</div>}
+
+                <motion.button type="submit" style={cr.submitBtn(saving, saveSuccess)} disabled={saving || deleting}
+                  whileHover={!saving ? { scale: 1.02 } : {}} whileTap={!saving ? { scale: 0.98 } : {}}>
+                  {saving ? <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</>
+                    : saveSuccess ? <><Check size={16} /> Saved!</>
+                    : <><Save size={16} /> Save Changes</>}
+                </motion.button>
+
+                {/* Delete section */}
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--glass-border)' }}>
+                  {!showDeleteConfirm ? (
+                    <button type="button"
+                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', color: '#ff3d5a', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      onClick={() => setShowDeleteConfirm(true)} disabled={saving}>
+                      <Trash2 size={14} /> Delete This Item
+                    </button>
+                  ) : (
+                    <div style={{ background: 'rgba(255,61,90,0.08)', border: '1px solid rgba(255,61,90,0.3)', borderRadius: 10, padding: 14 }}>
+                      <div style={{ color: '#ff3d5a', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <AlertTriangle size={14} /> This cannot be undone
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+                        Type <strong style={{ color: 'var(--text-primary)' }}>{editingItemName}</strong> below to confirm deletion:
+                      </div>
+                      <input style={{ ...cr.input, marginBottom: 10 }} placeholder={editingItemName}
+                        value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} disabled={deleting} />
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                          onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setSaveError(null); }}
+                          disabled={deleting}>
+                          Cancel
+                        </button>
+                        <button type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#ff3d5a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deleting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          onClick={handleDelete}
+                          disabled={deleting || deleteConfirmText.trim().toLowerCase() !== editingItemName.trim().toLowerCase()}>
+                          {deleting ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete Permanently</>}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
