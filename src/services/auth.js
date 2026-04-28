@@ -14,7 +14,10 @@ const msalConfig = {
 };
 
 export const loginRequest = {
-  scopes: ['Sites.ReadWrite.All', 'User.Read'],
+  // Sites.Manage.All is required for modifying column schemas (e.g., adding
+  // new choices to Category/Vendor/Reason/Language fields). Sites.ReadWrite.All
+  // alone only allows item-level CRUD. User.Read for profile + photo.
+  scopes: ['Sites.Manage.All', 'Sites.ReadWrite.All', 'User.Read'],
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);

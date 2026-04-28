@@ -39,6 +39,21 @@ async function graphFetch(url, options = {}) {
 
     if (!response.ok) {
       const errorBody = await response.text();
+      // Friendlier message for the most common permission-related failures
+      if (response.status === 403) {
+        const isColumnUpdate = method === 'PATCH' && /\/columns\//.test(url);
+        if (isColumnUpdate) {
+          throw new Error(
+            "You don't have permission to add new options to this list. Ask IT to grant the Sites.Manage.All scope and admin consent in Azure AD."
+          );
+        }
+        throw new Error(
+          "Access denied. Your account doesn't have permission for this action — sign out and back in, or ask IT for access."
+        );
+      }
+      if (response.status === 401) {
+        throw new Error('Your session has expired. Please sign out and sign back in.');
+      }
       throw new Error(
         `Graph API error ${response.status}: ${response.statusText} — ${errorBody}`
       );
