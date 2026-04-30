@@ -8,6 +8,7 @@ const LIST_NAMES = {
   inventory: 'Reception Inventory',
   clientLog: 'Client Log',
   purchaseOrders: 'Purchase Orders',
+  mailPickups: 'Mail Pickups',
 };
 
 // --- Helpers ---
@@ -320,6 +321,63 @@ export async function updatePurchaseOrder(id, data) {
     method: 'PATCH',
     body: data,
   });
+}
+
+// --- Mail Pickups ---
+
+export async function getMailPickups() {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.mailPickups);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=200&$orderby=fields/DateNotified desc`);
+}
+
+export async function createMailPickup(data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.mailPickups);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items`, {
+    method: 'POST',
+    body: { fields: data },
+  });
+}
+
+export async function updateMailPickup(id, data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.mailPickups);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}/fields`, {
+    method: 'PATCH',
+    body: data,
+  });
+}
+
+export async function deleteMailPickup(id) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.mailPickups);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+// --- Org user search (type-ahead picker for Mail Pickup recipient) ---
+
+export async function searchOrgUsers(query) {
+  if (!query || query.trim().length < 2) return [];
+  const q = encodeURIComponent(query.trim());
+  // Search by displayName OR mail OR userPrincipalName, accounts only
+  const filter = `accountEnabled eq true and (startswith(displayName,'${q.replace(/'/g, "''")}') or startswith(givenName,'${q.replace(/'/g, "''")}') or startswith(surname,'${q.replace(/'/g, "''")}') or startswith(mail,'${q.replace(/'/g, "''")}'))`;
+  try {
+    const result = await graphFetch(`/users?$filter=${encodeURIComponent(filter)}&$select=id,displayName,mail,userPrincipalName,jobTitle&$top=10`);
+    return (result.value || [])
+      .map((u) => ({
+        id: u.id,
+        name: u.displayName,
+        email: u.mail || u.userPrincipalName,
+        title: u.jobTitle || '',
+      }))
+      .filter((u) => u.email); // Only users with an email
+  } catch (err) {
+    console.warn('User search failed:', err.message);
+    return [];
+  }
 }
 
 // --- Utility: clear cached IDs (use if site/list structure changes) ---

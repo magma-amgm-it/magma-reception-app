@@ -7,6 +7,7 @@ import ClientLog from './pages/ClientLog';
 import SupplyRequests from './pages/SupplyRequests';
 import Inventory from './pages/Inventory';
 import PurchaseOrders from './pages/PurchaseOrders';
+import MailPickup from './pages/MailPickup';
 import { msalInstance, loginRequest, initializeMsal, getAccessToken } from './services/auth';
 import { BellRing, LogIn, Shield, Loader2 } from 'lucide-react';
 
@@ -213,6 +214,7 @@ export default function App() {
           <Route path="/requests" element={<SupplyRequests />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/orders" element={<PurchaseOrders />} />
+          <Route path="/mail" element={<MailPickup />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>

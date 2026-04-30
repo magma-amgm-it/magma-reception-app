@@ -7,6 +7,7 @@ import {
   PackageSearch,
   Warehouse,
   ShoppingCart,
+  Mail,
   X,
   BellRing,
   LogOut,
@@ -20,6 +21,7 @@ const navItems = [
   { to: '/requests', icon: PackageSearch, label: 'Supply Requests' },
   { to: '/inventory', icon: Warehouse, label: 'Inventory' },
   { to: '/orders', icon: ShoppingCart, label: 'Purchase Orders' },
+  { to: '/mail', icon: Mail, label: 'Mail Pickup' },
 ];
 
 export default function Sidebar() {
