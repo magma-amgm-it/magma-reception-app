@@ -276,6 +276,23 @@ export async function createClientLogEntry(data) {
   });
 }
 
+export async function updateClientLogEntry(id, data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.clientLog);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}/fields`, {
+    method: 'PATCH',
+    body: data,
+  });
+}
+
+export async function deleteClientLogEntry(id) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.clientLog);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // --- Purchase Orders ---
 
 export async function getPurchaseOrders(filters) {

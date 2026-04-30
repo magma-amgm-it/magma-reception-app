@@ -13,12 +13,18 @@ import {
   Calendar,
   BarChart3,
   X,
+  Pencil,
+  Save,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { format, startOfDay, endOfDay, startOfWeek, endOfWeek, subDays, subMonths, startOfMonth, endOfMonth } from 'date-fns';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
 import {
   createClientLogEntry,
+  updateClientLogEntry,
+  deleteClientLogEntry,
   getClientLogReasonChoices,
   addClientLogReasonChoice,
   getClientLogLanguageChoices,
@@ -288,7 +294,22 @@ function getStatusColor(status) {
 function formatTime(dateStr) {
   if (!dateStr) return '';
   try {
-    return format(new Date(dateStr), 'h:mm a');
+    const d = new Date(dateStr);
+    const now = new Date();
+    const isToday = d.toDateString() === now.toDateString();
+    return isToday ? format(d, 'h:mm a') : format(d, 'MMM d, h:mm a');
+  } catch {
+    return '';
+  }
+}
+
+// Format ISO date for <input type="datetime-local"> value
+function toLocalDatetimeInput(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   } catch {
     return '';
   }
@@ -537,15 +558,127 @@ export default function ClientLog() {
     }
   };
 
+  // ── Edit entry state ──
+  const [editingEntry, setEditingEntry] = useState(null); // The entry object being edited
+  const [editForm, setEditForm] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editSaveSuccess, setEditSaveSuccess] = useState(false);
+  const [editSaveError, setEditSaveError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingEntry, setDeletingEntry] = useState(false);
+
+  const handleOpenEditEntry = (entry) => {
+    setEditingEntry(entry);
+    setEditForm({
+      FirstName: entry.firstName,
+      LastName: entry.lastName,
+      ReasonForVisit: entry.reason !== '—' ? entry.reason : '',
+      StatusInCanada: entry.status !== '—' ? entry.status : '',
+      PreferredLanguage: entry.language || 'English',
+      NumberOfFamilyMembers: entry.familyMembers,
+      InteractionType: entry.interactionType,
+      PhoneNumber: entry.phone,
+      EmailAddress: entry.email,
+      Notes: entry.notes,
+      DateOfInteraction: toLocalDatetimeInput(entry.rawDate),
+    });
+    setEditSaveError(null);
+    setEditSaveSuccess(false);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText('');
+  };
+
+  const handleCloseEditEntry = () => {
+    if (savingEdit || deletingEntry) return;
+    setEditingEntry(null);
+    setEditForm(null);
+    setShowDeleteConfirm(false);
+  };
+
+  const updateEditField = (key, value) => {
+    setEditForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEditEntry = async (e) => {
+    e?.preventDefault?.();
+    if (savingEdit || !editForm) return;
+    if (!editForm.FirstName.trim() || !editForm.LastName.trim()) {
+      setEditSaveError('First name and last name are required');
+      return;
+    }
+    setSavingEdit(true);
+    setEditSaveError(null);
+    try {
+      const payload = {
+        Title: `${editForm.FirstName.trim()} ${editForm.LastName.trim()}`,
+        FirstName: editForm.FirstName.trim(),
+        LastName: editForm.LastName.trim(),
+        ReasonForVisit: editForm.ReasonForVisit || null,
+        StatusInCanada: editForm.StatusInCanada || null,
+        PreferredLanguage: editForm.PreferredLanguage || 'English',
+        NumberOfFamilyMembers: Number(editForm.NumberOfFamilyMembers) || 1,
+        InteractionType: editForm.InteractionType || 'In-Person Visit',
+        PhoneNumber: editForm.PhoneNumber || null,
+        EmailAddress: editForm.EmailAddress || null,
+        Notes: editForm.Notes || null,
+      };
+      // Convert datetime-local back to ISO if changed
+      if (editForm.DateOfInteraction) {
+        payload.DateOfInteraction = new Date(editForm.DateOfInteraction).toISOString();
+      }
+      await updateClientLogEntry(editingEntry.id, payload);
+      setEditSaveSuccess(true);
+      refresh();
+      setTimeout(() => {
+        setEditingEntry(null);
+        setEditForm(null);
+        setEditSaveSuccess(false);
+      }, 1000);
+    } catch (err) {
+      setEditSaveError(err.message || 'Failed to save changes');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteEntry = async () => {
+    if (deletingEntry || !editingEntry) return;
+    if (deleteConfirmText.trim().toLowerCase() !== editingEntry.name.trim().toLowerCase()) {
+      setEditSaveError(`Type the name exactly: "${editingEntry.name}"`);
+      return;
+    }
+    setDeletingEntry(true);
+    setEditSaveError(null);
+    try {
+      await deleteClientLogEntry(editingEntry.id);
+      refresh();
+      setEditingEntry(null);
+      setEditForm(null);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      setEditSaveError(err.message || 'Failed to delete entry');
+    } finally {
+      setDeletingEntry(false);
+    }
+  };
+
   const { data: rawData, loading, error, refresh } = useSharePointList('clientLog');
 
-  // Map SharePoint fields to UI shape (keep rawDate for filtering)
+  // Map SharePoint fields to UI shape (keep rawDate for filtering, plus full data for editing)
   const entries = useMemo(() => rawData.map((item) => ({
     id: item.id,
     name: item.fields?.Title || `${item.fields?.FirstName || ''} ${item.fields?.LastName || ''}`.trim() || 'Unknown',
+    firstName: item.fields?.FirstName || '',
+    lastName: item.fields?.LastName || '',
     reason: item.fields?.ReasonForVisit || '—',
     status: item.fields?.StatusInCanada || '—',
     language: item.fields?.PreferredLanguage || null,
+    familyMembers: item.fields?.NumberOfFamilyMembers ?? 1,
+    interactionType: item.fields?.InteractionType || 'In-Person Visit',
+    phone: item.fields?.PhoneNumber || '',
+    email: item.fields?.EmailAddress || '',
+    notes: item.fields?.Notes || '',
     time: formatTime(item.fields?.DateOfInteraction),
     rawDate: item.fields?.DateOfInteraction || item.createdDateTime || null,
   })), [rawData]);
@@ -598,6 +731,7 @@ export default function ClientLog() {
         PhoneNumber: phone || undefined,
         EmailAddress: email || undefined,
         Notes: notes || undefined,
+        DateOfInteraction: new Date().toISOString(),
       });
       setSuccess(true);
       setFirstName('');
@@ -1030,9 +1164,12 @@ export default function ClientLog() {
             {filteredEntries.slice(0, 50).map((entry, i) => (
               <motion.div
                 key={entry.id}
-                style={s.entryItem}
+                style={{ ...s.entryItem, cursor: 'pointer' }}
                 variants={fadeInUp}
                 custom={3 + i}
+                whileHover={{ backgroundColor: 'rgba(0,212,255,0.06)' }}
+                onClick={() => handleOpenEditEntry(entry)}
+                title="Click to edit"
               >
                 <User size={16} color="var(--text-dim)" />
                 <div style={{ flex: 1 }}>
@@ -1043,6 +1180,7 @@ export default function ClientLog() {
                   {entry.status}
                 </span>
                 <span style={s.entryTime}>{entry.time}</span>
+                <Pencil size={13} color="var(--text-dim)" style={{ opacity: 0.5 }} />
               </motion.div>
             ))}
           </motion.div>
@@ -1056,6 +1194,189 @@ export default function ClientLog() {
           }
         `}</style>
       </motion.div>
+
+      {/* ── Edit Entry Modal ── */}
+      <AnimatePresence>
+        {editingEntry && editForm && (
+          <motion.div
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20, overflow: 'auto' }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && handleCloseEditEntry()}
+          >
+            <motion.div
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 580, position: 'relative', maxHeight: '92vh', overflowY: 'auto' }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            >
+              <button
+                style={{ position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}
+                onClick={handleCloseEditEntry} disabled={savingEdit || deletingEntry}
+              >
+                <X size={20} />
+              </button>
+
+              <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
+                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#00d4ff' }} />
+                Edit Client Visit
+              </div>
+              <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
+                Update any field. Click Save Changes to commit.
+              </div>
+
+              <form onSubmit={handleSaveEditEntry}>
+                {/* First + Last Name */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label style={s.label}>First Name *</label>
+                    <input style={s.input} value={editForm.FirstName} onChange={(e) => updateEditField('FirstName', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={s.label}>Last Name *</label>
+                    <input style={s.input} value={editForm.LastName} onChange={(e) => updateEditField('LastName', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Date / Time */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={s.label}>Date & Time of Visit</label>
+                  <input
+                    type="datetime-local"
+                    style={s.input}
+                    value={editForm.DateOfInteraction}
+                    onChange={(e) => updateEditField('DateOfInteraction', e.target.value)}
+                  />
+                </div>
+
+                {/* Reason */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={s.label}>Reason for Visit</label>
+                  <select style={s.input} value={editForm.ReasonForVisit} onChange={(e) => updateEditField('ReasonForVisit', e.target.value)}>
+                    <option value="">— None —</option>
+                    {reasons.map((r) => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+
+                {/* Status */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={s.label}>Status in Canada</label>
+                  <select style={s.input} value={editForm.StatusInCanada} onChange={(e) => updateEditField('StatusInCanada', e.target.value)}>
+                    <option value="">— None —</option>
+                    {statusOptions.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
+                  </select>
+                </div>
+
+                {/* Language + Family + Interaction */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label style={s.label}>Preferred Language</label>
+                    <select style={s.input} value={editForm.PreferredLanguage} onChange={(e) => updateEditField('PreferredLanguage', e.target.value)}>
+                      {languages.map((l) => <option key={l} value={l}>{l}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={s.label}>Family Members</label>
+                    <input type="number" min="1" style={s.input}
+                      value={editForm.NumberOfFamilyMembers}
+                      onChange={(e) => updateEditField('NumberOfFamilyMembers', e.target.value)} />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <label style={s.label}>Interaction Type</label>
+                  <select style={s.input} value={editForm.InteractionType} onChange={(e) => updateEditField('InteractionType', e.target.value)}>
+                    {interactionTypes.map((t) => <option key={t} value={t}>{interactionLabels[t] || t}</option>)}
+                  </select>
+                </div>
+
+                {/* Phone + Email */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 }}>
+                  <div>
+                    <label style={s.label}>Phone</label>
+                    <input style={s.input} value={editForm.PhoneNumber} onChange={(e) => updateEditField('PhoneNumber', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={s.label}>Email</label>
+                    <input style={s.input} value={editForm.EmailAddress} onChange={(e) => updateEditField('EmailAddress', e.target.value)} />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div style={{ marginBottom: 14 }}>
+                  <label style={s.label}>Notes</label>
+                  <textarea
+                    style={{ ...s.input, minHeight: 70, resize: 'vertical', fontFamily: 'inherit' }}
+                    value={editForm.Notes}
+                    onChange={(e) => updateEditField('Notes', e.target.value)}
+                  />
+                </div>
+
+                {editSaveError && (
+                  <div style={{ color: '#ff3d5a', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>{editSaveError}</div>
+                )}
+
+                <motion.button
+                  type="submit"
+                  style={{ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: savingEdit ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: editSaveSuccess ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: editSaveSuccess ? '#00e676' : '#061218' }}
+                  disabled={savingEdit || deletingEntry}
+                  whileHover={!savingEdit ? { scale: 1.02 } : {}}
+                  whileTap={!savingEdit ? { scale: 0.98 } : {}}
+                >
+                  {savingEdit ? <><Loader2 size={16} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> Saving...</>
+                    : editSaveSuccess ? <><Check size={16} /> Saved!</>
+                    : <><Save size={16} /> Save Changes</>}
+                </motion.button>
+
+                {/* Delete section */}
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--glass-border)' }}>
+                  {!showDeleteConfirm ? (
+                    <button
+                      type="button"
+                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', color: '#ff3d5a', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      onClick={() => setShowDeleteConfirm(true)}
+                      disabled={savingEdit}
+                    >
+                      <Trash2 size={14} /> Delete This Entry
+                    </button>
+                  ) : (
+                    <div style={{ background: 'rgba(255,61,90,0.08)', border: '1px solid rgba(255,61,90,0.3)', borderRadius: 10, padding: 14 }}>
+                      <div style={{ color: '#ff3d5a', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <AlertTriangle size={14} /> This cannot be undone
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+                        Type <strong style={{ color: 'var(--text-primary)' }}>{editingEntry.name}</strong> below to confirm:
+                      </div>
+                      <input
+                        style={{ ...s.input, marginBottom: 10 }}
+                        placeholder={editingEntry.name}
+                        value={deleteConfirmText}
+                        onChange={(e) => setDeleteConfirmText(e.target.value)}
+                        disabled={deletingEntry}
+                      />
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button
+                          type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                          onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setEditSaveError(null); }}
+                          disabled={deletingEntry}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#ff3d5a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deletingEntry ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          onClick={handleDeleteEntry}
+                          disabled={deletingEntry || deleteConfirmText.trim().toLowerCase() !== editingEntry.name.trim().toLowerCase()}
+                        >
+                          {deletingEntry ? <><Loader2 size={14} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete Permanently</>}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </PageWrapper>
   );
 }
