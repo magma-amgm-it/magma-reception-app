@@ -700,17 +700,29 @@ export default function ClientLog() {
     const reasonCounts = {};
     const statusCounts = {};
     const langCounts = { English: 0, French: 0 };
+    let peopleServed = 0;
     filteredEntries.forEach((e) => {
       if (e.reason && e.reason !== '—') reasonCounts[e.reason] = (reasonCounts[e.reason] || 0) + 1;
       if (e.status && e.status !== '—') statusCounts[e.status] = (statusCounts[e.status] || 0) + 1;
       if (e.language === 'English' || e.language === 'French') langCounts[e.language]++;
+      // Sum family members — defaults to 1 for missing/zero values so a single visitor still counts
+      const fam = Number(e.familyMembers);
+      peopleServed += Number.isFinite(fam) && fam > 0 ? fam : 1;
     });
     const topReasons = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
     const statusBreakdown = statusOptions
       .map((opt) => ({ label: opt.label, color: opt.color, count: statusCounts[opt.label] || 0 }))
       .filter((s) => s.count > 0);
-    return { topReasons, statusBreakdown, langCounts };
+    return { topReasons, statusBreakdown, langCounts, peopleServed };
   }, [filteredEntries]);
+
+  // All-time total people served (for the header badge)
+  const allTimePeople = useMemo(() => {
+    return entries.reduce((sum, e) => {
+      const fam = Number(e.familyMembers);
+      return sum + (Number.isFinite(fam) && fam > 0 ? fam : 1);
+    }, 0);
+  }, [entries]);
 
   const activeFilterLabel = range?.label || 'All time';
 
@@ -760,7 +772,7 @@ export default function ClientLog() {
         {/* Header with count badge */}
         <motion.div style={s.header} variants={fadeInUp} custom={0}>
           <span style={s.badge}>
-            {loading ? '...' : entries.length} total clients logged
+            {loading ? '...' : allTimePeople} {allTimePeople === 1 ? 'person' : 'people'} served · {entries.length} total {entries.length === 1 ? 'visit' : 'visits'}
           </span>
         </motion.div>
 
@@ -1055,11 +1067,13 @@ export default function ClientLog() {
           <div style={f.statsGrid}>
             {/* Count */}
             <div style={f.statsCount}>
-              <div style={f.statsCountNum}>{filteredEntries.length}</div>
+              <div style={f.statsCountNum}>{stats.peopleServed}</div>
               <div style={f.statsCountLabel}>
-                {filteredEntries.length === 1 ? 'client' : 'clients'} served
+                {stats.peopleServed === 1 ? 'person' : 'people'} served
               </div>
-              <div style={f.statsCountPeriod}>{activeFilterLabel}</div>
+              <div style={f.statsCountPeriod}>
+                across {filteredEntries.length} {filteredEntries.length === 1 ? 'visit' : 'visits'} · {activeFilterLabel}
+              </div>
             </div>
 
             {/* Breakdowns */}
