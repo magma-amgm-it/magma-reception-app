@@ -562,6 +562,100 @@ export default function Dashboard() {
     };
   }, [supplyData, inventoryData, orderData]);
 
+  // ── Trend Insights (for the globe HUD) ──────────────────
+  // Comparisons that aren't shown anywhere else: deltas, top categories.
+  const insights = useMemo(() => {
+    const now = new Date();
+    const startOfThisWeek = new Date(now); startOfThisWeek.setDate(now.getDate() - 7);
+    const startOfLastWeek = new Date(now); startOfLastWeek.setDate(now.getDate() - 14);
+    const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    // 1) Clients delta — this week vs last week
+    let clientsThisWeek = 0;
+    let clientsLastWeek = 0;
+    clientData.forEach((i) => {
+      const dStr = i.fields?.DateOfInteraction || i.createdDateTime;
+      if (!dStr) return;
+      const d = new Date(dStr);
+      if (d >= startOfThisWeek && d <= now) clientsThisWeek++;
+      else if (d >= startOfLastWeek && d < startOfThisWeek) clientsLastWeek++;
+    });
+    let clientDelta = null;
+    if (clientsLastWeek > 0) {
+      const pct = Math.round(((clientsThisWeek - clientsLastWeek) / clientsLastWeek) * 100);
+      clientDelta = { pct, isUp: pct > 0 };
+    } else if (clientsThisWeek > 0) {
+      clientDelta = { pct: 100, isUp: true, isNew: true };
+    }
+
+    // 2) Spend delta — this month vs last month
+    let spendThisMonth = 0;
+    let spendLastMonth = 0;
+    orderData.forEach((i) => {
+      const cost = Number(i.fields?.Cost) || 0;
+      const dStr = i.fields?.DateOrdered || i.createdDateTime;
+      if (!dStr || i.fields?.OrderStatus === 'Cancelled') return;
+      const d = new Date(dStr);
+      if (d >= startOfThisMonth) spendThisMonth += cost;
+      else if (d >= startOfLastMonth && d <= endOfLastMonth) spendLastMonth += cost;
+    });
+    let spendDelta = null;
+    if (spendLastMonth > 0) {
+      const pct = Math.round(((spendThisMonth - spendLastMonth) / spendLastMonth) * 100);
+      spendDelta = { pct, isUp: pct > 0 };
+    } else if (spendThisMonth > 0) {
+      spendDelta = { pct: 100, isUp: true, isNew: true };
+    }
+
+    // 3) Top reason for visit this week
+    const reasonCounts = {};
+    clientData.forEach((i) => {
+      const dStr = i.fields?.DateOfInteraction || i.createdDateTime;
+      if (!dStr) return;
+      const d = new Date(dStr);
+      if (d < startOfThisWeek) return;
+      const r = i.fields?.ReasonForVisit;
+      if (r) reasonCounts[r] = (reasonCounts[r] || 0) + 1;
+    });
+    const topReasonEntry = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1])[0];
+    const topReason = topReasonEntry ? topReasonEntry[0] : null;
+
+    // 4) Top vendor by spend this month
+    const vendorSpend = {};
+    orderData.forEach((i) => {
+      const cost = Number(i.fields?.Cost) || 0;
+      const dStr = i.fields?.DateOrdered || i.createdDateTime;
+      if (!dStr || i.fields?.OrderStatus === 'Cancelled') return;
+      const d = new Date(dStr);
+      if (d < startOfThisMonth) return;
+      const v = i.fields?.Vendor;
+      if (v) vendorSpend[v] = (vendorSpend[v] || 0) + cost;
+    });
+    const topVendorEntry = Object.entries(vendorSpend).sort((a, b) => b[1] - a[1])[0];
+    const topVendor = topVendorEntry ? topVendorEntry[0] : null;
+
+    // 5) Top immigration status this month
+    const statusCounts = {};
+    clientData.forEach((i) => {
+      const dStr = i.fields?.DateOfInteraction || i.createdDateTime;
+      if (!dStr) return;
+      const d = new Date(dStr);
+      if (d < startOfThisMonth) return;
+      const st = i.fields?.StatusInCanada;
+      if (st) statusCounts[st] = (statusCounts[st] || 0) + 1;
+    });
+    const topStatusEntry = Object.entries(statusCounts).sort((a, b) => b[1] - a[1])[0];
+    const topStatus = topStatusEntry ? topStatusEntry[0] : null;
+
+    return {
+      clientDelta, clientsThisWeek, clientsLastWeek,
+      spendDelta, spendThisMonth, spendLastMonth,
+      topReason, topVendor, topStatus,
+    };
+  }, [clientData, orderData]);
+
   // ── Immigration Status Breakdown ────────────────────────
   const immigrationData = useMemo(() => {
     const counts = {};
@@ -822,8 +916,7 @@ export default function Dashboard() {
           <Suspense fallback={<div style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)' }}><Loader2 size={24} style={{ animation: 'dspin 1s linear infinite' }} /></div>}>
             <OrbVisual
               healthScore={actionItems.globeScore}
-              actionItems={actionItems}
-              onNavigate={(path) => navigate(path)}
+              insights={insights}
             />
           </Suspense>
         </motion.div>

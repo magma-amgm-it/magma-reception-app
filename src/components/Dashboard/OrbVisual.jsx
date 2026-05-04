@@ -294,73 +294,66 @@ function hudTruncate(s, max = 16) {
   return s.length > max ? s.slice(0, max - 1) + '…' : s;
 }
 
-export default function OrbVisual({ healthScore = 80, actionItems, onNavigate }) {
-  const totalActions = actionItems?.total ?? 0;
-
-  // Action-oriented HUD items. Each pill is something reception should
-  // consider acting on \u2014 NOT a duplicate of the top KPI cards.
+export default function OrbVisual({ healthScore = 80, insights }) {
+  // Trend-oriented HUD items. Each pill is a comparison or top-category
+  // insight that ISN'T already shown in the top KPI cards.
   const hudItems = [];
-  if (actionItems) {
-    // 1. Urgent requests
-    if (actionItems.urgentRequests > 0) {
+  if (insights) {
+    // 1) Clients vs last week (% change)
+    if (insights.clientDelta) {
+      const { pct, isUp, isNew } = insights.clientDelta;
+      const color = isNew ? '#00d4ff' : (isUp ? '#00e676' : '#ff3d5a');
+      const arrow = isNew ? '' : (isUp ? '\u25b2 ' : '\u25bc ');
       hudItems.push({
-        value: actionItems.urgentRequests,
-        label: actionItems.urgentRequests === 1 ? 'Urgent Request' : 'Urgent Requests',
-        color: '#ff3d5a',
-        path: '/requests',
+        value: `${arrow}${Math.abs(pct)}%`,
+        label: isNew ? 'Clients This Week' : 'Clients vs Last Week',
+        color,
       });
     }
 
-    // 2. Critical stock (worse than just "low") OR low stock as a fallback
-    if (actionItems.criticalStock > 0) {
+    // 2) Spend vs last month (% change)
+    if (insights.spendDelta) {
+      const { pct, isUp, isNew } = insights.spendDelta;
+      // Higher spend isn't necessarily "good", so neutral color regardless of direction
+      const color = '#ffab00';
+      const arrow = isNew ? '' : (isUp ? '\u25b2 ' : '\u25bc ');
       hudItems.push({
-        value: actionItems.criticalStock,
-        label: 'Critical Stock',
-        color: '#ff3d5a',
-        path: '/inventory',
-      });
-    } else if (actionItems.lowStockItems > 0) {
-      hudItems.push({
-        value: actionItems.lowStockItems,
-        label: 'Low Stock',
-        color: '#ffab00',
-        path: '/inventory',
+        value: `${arrow}${Math.abs(pct)}%`,
+        label: isNew ? 'Spend This Month' : 'Spend vs Last Month',
+        color,
       });
     }
 
-    // 3. Stale supply requests (open >7 days)
-    if (actionItems.staleRequests > 0) {
+    // 3) Top reason for visit (this week)
+    if (insights.topReason) {
       hudItems.push({
-        value: actionItems.staleRequests,
-        label: 'Stale Requests',
-        color: '#ffab00',
-        path: '/requests',
+        value: hudTruncate(insights.topReason, 18),
+        label: 'Top Reason This Week',
+        color: '#00d4ff',
       });
     }
 
-    // 4. Top reorder priority \u2014 single most-urgent item by name
-    if (actionItems.topReorder) {
+    // 4) Top vendor (this month)
+    if (insights.topVendor) {
       hudItems.push({
-        value: hudTruncate(actionItems.topReorder, 16),
-        label: 'Restock First',
+        value: hudTruncate(insights.topVendor, 14),
+        label: 'Top Vendor This Month',
         color: '#a855f7',
-        path: '/inventory',
       });
     }
 
-    // 5. Pending orders \u2014 only when there's room
-    if (actionItems.pendingOrders > 0 && hudItems.length < 5) {
+    // 5) Top immigration status (this month)
+    if (insights.topStatus) {
       hudItems.push({
-        value: actionItems.pendingOrders,
-        label: 'Pending Orders',
-        color: '#a855f7',
-        path: '/orders',
+        value: hudTruncate(insights.topStatus, 14),
+        label: 'Top Status This Month',
+        color: '#26a69a',
       });
     }
 
-    // Fallback when nothing requires action
-    if (hudItems.length === 0 && totalActions === 0) {
-      hudItems.push({ value: '\u2713', label: 'All Clear', color: '#00e676' });
+    // Fallback if there's no data yet
+    if (hudItems.length === 0) {
+      hudItems.push({ value: '\u2014', label: 'Awaiting Data', color: '#8b949e' });
     }
   }
 
@@ -389,7 +382,6 @@ export default function OrbVisual({ healthScore = 80, actionItems, onNavigate })
           label={item.label}
           color={item.color}
           orbitClass={`hud-orbit hud-orbit-${i}`}
-          onClick={item.path && onNavigate ? () => onNavigate(item.path) : undefined}
         />
       ))}
 
