@@ -506,6 +506,8 @@ export default function ClientLog() {
   const [language, setLanguage] = useState('English');
   const [familyMembers, setFamilyMembers] = useState(1);
   const [interaction, setInteraction] = useState('In-Person Visit');
+  // Default to current local datetime; users can backdate if logging late
+  const [dateOfInteraction, setDateOfInteraction] = useState(() => toLocalDatetimeInput(new Date().toISOString()));
   const [showMore, setShowMore] = useState(false);
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -785,6 +787,10 @@ export default function ClientLog() {
     setSubmitting(true);
     setSubmitError(null);
     try {
+      // Use the user-selected date/time, or fall back to "now" if blank
+      const interactionISO = dateOfInteraction
+        ? new Date(dateOfInteraction).toISOString()
+        : new Date().toISOString();
       await createClientLogEntry({
         Title: `${firstName} ${lastName}`,
         FirstName: firstName,
@@ -797,7 +803,7 @@ export default function ClientLog() {
         PhoneNumber: phone || undefined,
         EmailAddress: email || undefined,
         Notes: notes || undefined,
-        DateOfInteraction: new Date().toISOString(),
+        DateOfInteraction: interactionISO,
       });
       setSuccess(true);
       setFirstName('');
@@ -810,6 +816,7 @@ export default function ClientLog() {
       setPhone('');
       setEmail('');
       setNotes('');
+      setDateOfInteraction(toLocalDatetimeInput(new Date().toISOString()));
       refresh();
       setTimeout(() => setSuccess(false), 2000);
     } catch (err) {
@@ -851,6 +858,30 @@ export default function ClientLog() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
+            </div>
+          </div>
+
+          {/* Date & Time of Interaction */}
+          <div style={{ marginBottom: 'var(--space-6)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+              <label style={s.label}>Date & Time of Visit</label>
+              <button
+                type="button"
+                style={{ background: 'none', border: 'none', color: '#00d4ff', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                onClick={() => setDateOfInteraction(toLocalDatetimeInput(new Date().toISOString()))}
+                title="Set to current time"
+              >
+                Set to now
+              </button>
+            </div>
+            <input
+              type="datetime-local"
+              style={s.input}
+              value={dateOfInteraction}
+              onChange={(e) => setDateOfInteraction(e.target.value)}
+            />
+            <div style={{ fontSize: 11, color: 'var(--text-dim)', marginTop: 4 }}>
+              Defaults to now. Backdate this if you're logging a visit that happened earlier.
             </div>
           </div>
 
