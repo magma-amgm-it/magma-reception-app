@@ -490,11 +490,51 @@ export default function Dashboard() {
       return st && st !== 'Completed' && st !== 'Cancelled';
     }).length;
 
+    // Urgent supply requests (Urgency=Urgent + still open)
+    const urgentRequests = supplyData.filter(i => {
+      const st = i.fields?.Status;
+      const ur = i.fields?.Urgency;
+      return ur === 'Urgent' && st && st !== 'Completed' && st !== 'Cancelled';
+    }).length;
+
+    // Stale supply requests (open > 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const staleRequests = supplyData.filter(i => {
+      const st = i.fields?.Status;
+      if (!st || st === 'Completed' || st === 'Cancelled') return false;
+      const created = i.createdDateTime || i.fields?.DateOfRequest;
+      return created && new Date(created) < sevenDaysAgo;
+    }).length;
+
     const lowStockItems = inventoryData.filter(i => {
       const q = i.fields?.CurrentQuantity ?? 0;
       const t = i.fields?.MinimumThreshold ?? 0;
       return t > 0 && q <= t;
     }).length;
+
+    // Critical stock — items at 50% or less of threshold (worse than just "low")
+    const criticalStock = inventoryData.filter(i => {
+      const q = i.fields?.CurrentQuantity ?? 0;
+      const t = i.fields?.MinimumThreshold ?? 0;
+      return t > 0 && q <= t * 0.5;
+    }).length;
+
+    // Top reorder priority — single item with the lowest stock-to-threshold ratio
+    let topReorder = null;
+    let lowestRatio = Infinity;
+    inventoryData.forEach(i => {
+      const q = i.fields?.CurrentQuantity ?? 0;
+      const t = i.fields?.MinimumThreshold ?? 0;
+      const name = i.fields?.Title;
+      if (t > 0 && q <= t && name) {
+        const ratio = q / t;
+        if (ratio < lowestRatio) {
+          lowestRatio = ratio;
+          topReorder = name;
+        }
+      }
+    });
 
     const pendingOrders = orderData.filter(i => {
       const st = i.fields?.OrderStatus;
@@ -509,7 +549,17 @@ export default function Dashboard() {
     else if (total <= 8) globeScore = 55;
     else globeScore = 20;
 
-    return { openRequests, lowStockItems, pendingOrders, total, globeScore };
+    return {
+      openRequests,
+      urgentRequests,
+      staleRequests,
+      lowStockItems,
+      criticalStock,
+      topReorder,
+      pendingOrders,
+      total,
+      globeScore,
+    };
   }, [supplyData, inventoryData, orderData]);
 
   // ── Immigration Status Breakdown ────────────────────────
@@ -772,11 +822,8 @@ export default function Dashboard() {
           <Suspense fallback={<div style={{ height: 320, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-dim)' }}><Loader2 size={24} style={{ animation: 'dspin 1s linear infinite' }} /></div>}>
             <OrbVisual
               healthScore={actionItems.globeScore}
-              stats={{
-                clientsThisMonth,
-                monthlySpend: kpis.monthlySpend.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 }),
-              }}
               actionItems={actionItems}
+              onNavigate={(path) => navigate(path)}
             />
           </Suspense>
         </motion.div>

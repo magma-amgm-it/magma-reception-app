@@ -248,18 +248,35 @@ function OrbRings() {
 }
 
 // ─── Floating HUD stat pill ───
-function HudPill({ value, label, color, orbitClass }) {
+function HudPill({ value, label, color, orbitClass, onClick }) {
+  const clickable = typeof onClick === 'function';
   return (
     <div className={orbitClass} style={{
-      position: 'absolute', pointerEvents: 'none',
+      position: 'absolute',
+      pointerEvents: clickable ? 'auto' : 'none',
       textAlign: 'center', whiteSpace: 'nowrap',
     }}>
-      <div style={{
-        background: 'rgba(10,10,15,0.7)', backdropFilter: 'blur(8px)',
-        border: `1px solid ${color}30`, borderRadius: 10,
-        padding: '8px 16px', display: 'inline-block',
-        boxShadow: `0 0 20px ${color}15`,
-      }}>
+      <div
+        onClick={onClick}
+        style={{
+          background: 'rgba(10,10,15,0.75)', backdropFilter: 'blur(8px)',
+          border: `1px solid ${color}40`, borderRadius: 10,
+          padding: '8px 16px', display: 'inline-block',
+          boxShadow: `0 0 20px ${color}20`,
+          cursor: clickable ? 'pointer' : 'default',
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          if (!clickable) return;
+          e.currentTarget.style.transform = 'scale(1.05)';
+          e.currentTarget.style.boxShadow = `0 0 28px ${color}50`;
+        }}
+        onMouseLeave={(e) => {
+          if (!clickable) return;
+          e.currentTarget.style.transform = 'scale(1)';
+          e.currentTarget.style.boxShadow = `0 0 20px ${color}20`;
+        }}
+      >
         <div style={{ fontSize: 22, fontWeight: 800, color, lineHeight: 1, textShadow: `0 0 12px ${color}60` }}>
           {value}
         </div>
@@ -271,20 +288,80 @@ function HudPill({ value, label, color, orbitClass }) {
   );
 }
 
-export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
+// Truncate long item names so the "Restock First" pill stays compact
+function hudTruncate(s, max = 16) {
+  if (!s) return '';
+  return s.length > max ? s.slice(0, max - 1) + '…' : s;
+}
+
+export default function OrbVisual({ healthScore = 80, actionItems, onNavigate }) {
   const totalActions = actionItems?.total ?? 0;
 
-  // Build floating stat items
+  // Action-oriented HUD items. Each pill is something reception should
+  // consider acting on \u2014 NOT a duplicate of the top KPI cards.
   const hudItems = [];
-  if (stats) {
-    hudItems.push({ value: stats.clientsThisMonth, label: 'Clients This Month', color: '#00d4ff' });
-    hudItems.push({ value: `$${stats.monthlySpend}`, label: 'Monthly Spend', color: '#00e676' });
-  }
   if (actionItems) {
-    if (actionItems.openRequests > 0) hudItems.push({ value: actionItems.openRequests, label: 'Open Requests', color: '#a855f7' });
-    if (actionItems.lowStockItems > 0) hudItems.push({ value: actionItems.lowStockItems, label: 'Low Stock', color: '#ff3d5a' });
-    if (actionItems.pendingOrders > 0) hudItems.push({ value: actionItems.pendingOrders, label: 'Pending Orders', color: '#ffab00' });
-    if (totalActions === 0) hudItems.push({ value: '\u2713', label: 'All Clear', color: '#00e676' });
+    // 1. Urgent requests
+    if (actionItems.urgentRequests > 0) {
+      hudItems.push({
+        value: actionItems.urgentRequests,
+        label: actionItems.urgentRequests === 1 ? 'Urgent Request' : 'Urgent Requests',
+        color: '#ff3d5a',
+        path: '/requests',
+      });
+    }
+
+    // 2. Critical stock (worse than just "low") OR low stock as a fallback
+    if (actionItems.criticalStock > 0) {
+      hudItems.push({
+        value: actionItems.criticalStock,
+        label: 'Critical Stock',
+        color: '#ff3d5a',
+        path: '/inventory',
+      });
+    } else if (actionItems.lowStockItems > 0) {
+      hudItems.push({
+        value: actionItems.lowStockItems,
+        label: 'Low Stock',
+        color: '#ffab00',
+        path: '/inventory',
+      });
+    }
+
+    // 3. Stale supply requests (open >7 days)
+    if (actionItems.staleRequests > 0) {
+      hudItems.push({
+        value: actionItems.staleRequests,
+        label: 'Stale Requests',
+        color: '#ffab00',
+        path: '/requests',
+      });
+    }
+
+    // 4. Top reorder priority \u2014 single most-urgent item by name
+    if (actionItems.topReorder) {
+      hudItems.push({
+        value: hudTruncate(actionItems.topReorder, 16),
+        label: 'Restock First',
+        color: '#a855f7',
+        path: '/inventory',
+      });
+    }
+
+    // 5. Pending orders \u2014 only when there's room
+    if (actionItems.pendingOrders > 0 && hudItems.length < 5) {
+      hudItems.push({
+        value: actionItems.pendingOrders,
+        label: 'Pending Orders',
+        color: '#a855f7',
+        path: '/orders',
+      });
+    }
+
+    // Fallback when nothing requires action
+    if (hudItems.length === 0 && totalActions === 0) {
+      hudItems.push({ value: '\u2713', label: 'All Clear', color: '#00e676' });
+    }
   }
 
   return (
@@ -312,6 +389,7 @@ export default function OrbVisual({ healthScore = 80, stats, actionItems }) {
           label={item.label}
           color={item.color}
           orbitClass={`hud-orbit hud-orbit-${i}`}
+          onClick={item.path && onNavigate ? () => onNavigate(item.path) : undefined}
         />
       ))}
 
