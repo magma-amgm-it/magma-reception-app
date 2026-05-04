@@ -215,6 +215,17 @@ export async function addClientLogReasonChoice(newReason) {
   return addChoiceToColumn(LIST_NAMES.clientLog, 'ReasonForVisit', newReason);
 }
 
+// --- Client Log Status in Canada ---
+
+export async function getClientLogStatusChoices() {
+  const { column } = await getChoiceColumn(LIST_NAMES.clientLog, 'StatusInCanada');
+  return column.choice?.choices || [];
+}
+
+export async function addClientLogStatusChoice(newStatus) {
+  return addChoiceToColumn(LIST_NAMES.clientLog, 'StatusInCanada', newStatus);
+}
+
 // --- Client Log Preferred Language ---
 
 export async function getClientLogLanguageChoices() {

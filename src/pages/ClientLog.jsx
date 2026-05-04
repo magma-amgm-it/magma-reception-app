@@ -29,6 +29,8 @@ import {
   addClientLogReasonChoice,
   getClientLogLanguageChoices,
   addClientLogLanguageChoice,
+  getClientLogStatusChoices,
+  addClientLogStatusChoice,
 } from '../services/graphApi';
 
 const FALLBACK_REASONS = [
@@ -45,14 +47,37 @@ const FALLBACK_REASONS = [
 
 const FALLBACK_LANGUAGES = ['English', 'French'];
 
-const statusOptions = [
-  { label: 'PR', color: '#00d4ff' },
-  { label: 'WP', color: '#00e676' },
-  { label: 'SP', color: '#a855f7' },
-  { label: 'VV', color: '#ffab00' },
-  { label: 'AS', color: '#ff006e' },
-  { label: 'Refugee', color: '#26a69a' },
+// Predefined colors for known status codes — keeps the original look
+const STATUS_COLOR_MAP = {
+  PR: '#00d4ff',
+  WP: '#00e676',
+  SP: '#a855f7',
+  VV: '#ffab00',
+  AS: '#ff006e',
+  Refugee: '#26a69a',
+};
+
+// Palette for any new statuses (Citizen, etc.) — picked deterministically by name
+// so the same status always gets the same color across reloads.
+const STATUS_FALLBACK_COLORS = [
+  '#3b82f6', // blue
+  '#f59e0b', // amber
+  '#10b981', // green
+  '#ef4444', // red
+  '#8b5cf6', // violet
+  '#06b6d4', // cyan
+  '#84cc16', // lime
+  '#f97316', // orange
 ];
+
+function colorForStatus(label) {
+  if (STATUS_COLOR_MAP[label]) return STATUS_COLOR_MAP[label];
+  let hash = 0;
+  for (let i = 0; i < label.length; i++) hash = (hash << 5) - hash + label.charCodeAt(i);
+  return STATUS_FALLBACK_COLORS[Math.abs(hash) % STATUS_FALLBACK_COLORS.length];
+}
+
+const FALLBACK_STATUSES = ['PR', 'WP', 'SP', 'VV', 'AS', 'Refugee'];
 
 const interactionTypes = ['In-Person Visit', 'Phone Call', 'Email'];
 const interactionLabels = { 'In-Person Visit': 'In-Person', 'Phone Call': 'Phone', 'Email': 'Email' };
@@ -287,8 +312,8 @@ const s = {
 };
 
 function getStatusColor(status) {
-  const opt = statusOptions.find((o) => o.label === status);
-  return opt ? opt.color : '#8b949e';
+  if (!status || status === '—') return '#8b949e';
+  return colorForStatus(status);
 }
 
 function formatTime(dateStr) {
@@ -493,9 +518,10 @@ export default function ClientLog() {
   const [preset, setPreset] = useState('all');
   const [monthYear, setMonthYear] = useState(''); // 'YYYY-MM' format
 
-  // ── Dynamic reason + language lists ──
+  // ── Dynamic reason + language + status lists ──
   const [reasons, setReasons] = useState(FALLBACK_REASONS);
   const [languages, setLanguages] = useState(FALLBACK_LANGUAGES);
+  const [statuses, setStatuses] = useState(FALLBACK_STATUSES);
   const [showAddReason, setShowAddReason] = useState(false);
   const [newReasonName, setNewReasonName] = useState('');
   const [addingReason, setAddingReason] = useState(false);
@@ -504,6 +530,10 @@ export default function ClientLog() {
   const [newLanguageName, setNewLanguageName] = useState('');
   const [addingLanguage, setAddingLanguage] = useState(false);
   const [addLanguageError, setAddLanguageError] = useState(null);
+  const [showAddStatus, setShowAddStatus] = useState(false);
+  const [newStatusName, setNewStatusName] = useState('');
+  const [addingStatus, setAddingStatus] = useState(false);
+  const [addStatusError, setAddStatusError] = useState(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -518,6 +548,12 @@ export default function ClientLog() {
         const l = await getClientLogLanguageChoices();
         if (!cancelled && l.length > 0) setLanguages(l);
       } catch (err) { console.warn('Could not load languages:', err.message); }
+    })();
+    (async () => {
+      try {
+        const st = await getClientLogStatusChoices();
+        if (!cancelled && st.length > 0) setStatuses(st);
+      } catch (err) { console.warn('Could not load statuses:', err.message); }
     })();
     return () => { cancelled = true; };
   }, []);
@@ -555,6 +591,24 @@ export default function ClientLog() {
       setAddLanguageError(err.message || 'Failed to add language');
     } finally {
       setAddingLanguage(false);
+    }
+  };
+
+  const handleAddNewStatus = async () => {
+    const name = newStatusName.trim();
+    if (!name) { setAddStatusError('Status name cannot be empty'); return; }
+    if (statuses.some((st) => st.toLowerCase() === name.toLowerCase())) { setAddStatusError('That status already exists'); return; }
+    setAddingStatus(true); setAddStatusError(null);
+    try {
+      const updated = await addClientLogStatusChoice(name);
+      setStatuses(updated);
+      setStatusCanada(name);
+      setShowAddStatus(false);
+      setNewStatusName('');
+    } catch (err) {
+      setAddStatusError(err.message || 'Failed to add status');
+    } finally {
+      setAddingStatus(false);
     }
   };
 
@@ -710,11 +764,11 @@ export default function ClientLog() {
       peopleServed += Number.isFinite(fam) && fam > 0 ? fam : 1;
     });
     const topReasons = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1]).slice(0, 3);
-    const statusBreakdown = statusOptions
-      .map((opt) => ({ label: opt.label, color: opt.color, count: statusCounts[opt.label] || 0 }))
+    const statusBreakdown = statuses
+      .map((label) => ({ label, color: colorForStatus(label), count: statusCounts[label] || 0 }))
       .filter((s) => s.count > 0);
     return { topReasons, statusBreakdown, langCounts, peopleServed };
-  }, [filteredEntries]);
+  }, [filteredEntries, statuses]);
 
   // All-time total people served (for the header badge)
   const allTimePeople = useMemo(() => {
@@ -848,23 +902,61 @@ export default function ClientLog() {
 
           {/* Status in Canada */}
           <p style={s.sectionLabel}>Status in Canada</p>
-          <div style={s.optionGrid}>
-            {statusOptions.map((opt) => (
-              <motion.button
-                key={opt.label}
-                style={s.statusBtn(statusCanada === opt.label, opt.color)}
-                onClick={() => setStatusCanada(opt.label)}
-                whileTap={{ scale: 0.95 }}
-                animate={
-                  statusCanada === opt.label
-                    ? { boxShadow: `0 0 12px ${opt.color}40` }
-                    : { boxShadow: 'none' }
-                }
-              >
-                {opt.label}
-              </motion.button>
-            ))}
+          <div style={{ ...s.optionGrid, marginBottom: 'var(--space-2)' }}>
+            {statuses.map((label) => {
+              const color = colorForStatus(label);
+              return (
+                <motion.button
+                  type="button"
+                  key={label}
+                  style={s.statusBtn(statusCanada === label, color)}
+                  onClick={() => setStatusCanada(label)}
+                  whileTap={{ scale: 0.95 }}
+                  animate={
+                    statusCanada === label
+                      ? { boxShadow: `0 0 12px ${color}40` }
+                      : { boxShadow: 'none' }
+                  }
+                >
+                  {label}
+                </motion.button>
+              );
+            })}
+            {!showAddStatus && (
+              <button type="button"
+                style={{ padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, minHeight: 48 }}
+                onClick={() => { setShowAddStatus(true); setAddStatusError(null); setNewStatusName(''); }}>
+                <Plus size={12} /> New
+              </button>
+            )}
           </div>
+          {showAddStatus && (
+            <div style={{ marginBottom: 'var(--space-4)', display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+              <input
+                style={{ ...s.input, flex: 1, minWidth: 200 }}
+                placeholder="New status (e.g. Citizen)..."
+                value={newStatusName}
+                onChange={(e) => setNewStatusName(e.target.value)}
+                autoFocus
+                disabled={addingStatus}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewStatus(); } }}
+              />
+              <button type="button"
+                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingStatus ? 'not-allowed' : 'pointer', minHeight: 40 }}
+                onClick={handleAddNewStatus} disabled={addingStatus}>
+                {addingStatus ? <Loader2 size={12} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> : <Check size={12} />}
+              </button>
+              <button type="button"
+                style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', minHeight: 40 }}
+                onClick={() => { setShowAddStatus(false); setNewStatusName(''); setAddStatusError(null); }} disabled={addingStatus}>
+                <X size={12} />
+              </button>
+            </div>
+          )}
+          {addStatusError && showAddStatus && (
+            <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addStatusError}</div>
+          )}
+          {!showAddStatus && <div style={{ marginBottom: 'var(--space-4)' }} />}
 
           {/* Preferred Language */}
           <p style={s.sectionLabel}>Preferred Language</p>
@@ -1274,7 +1366,7 @@ export default function ClientLog() {
                   <label style={s.label}>Status in Canada</label>
                   <select style={s.input} value={editForm.StatusInCanada} onChange={(e) => updateEditField('StatusInCanada', e.target.value)}>
                     <option value="">— None —</option>
-                    {statusOptions.map((opt) => <option key={opt.label} value={opt.label}>{opt.label}</option>)}
+                    {statuses.map((label) => <option key={label} value={label}>{label}</option>)}
                   </select>
                 </div>
 
