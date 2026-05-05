@@ -339,7 +339,9 @@ export async function updatePurchaseOrder(id, data) {
 export async function getMailPickups() {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.mailPickups);
-  return graphFetch(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=200&$orderby=fields/DateNotified desc`);
+  // Sort client-side: SharePoint refuses $orderby on non-indexed columns,
+  // and the Mail Pickups list is short-lived enough that this is fine.
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=200`);
 }
 
 export async function createMailPickup(data) {

@@ -377,17 +377,25 @@ export default function MailPickup() {
   };
 
   // ── Map data ──
-  const items = useMemo(() => rawData.map((it) => ({
-    id: it.id,
-    title: it.fields?.Title || '',
-    recipientName: it.fields?.RecipientName || 'Unknown',
-    recipientEmail: it.fields?.RecipientEmail || '',
-    description: it.fields?.MailDescription || '',
-    status: it.fields?.Status || 'Pending',
-    dateNotified: it.fields?.DateNotified || it.createdDateTime || null,
-    datePickedUp: it.fields?.DatePickedUp || null,
-    reminderSent: it.fields?.ReminderSent === true,
-  })), [rawData]);
+  const items = useMemo(() => {
+    const mapped = rawData.map((it) => ({
+      id: it.id,
+      title: it.fields?.Title || '',
+      recipientName: it.fields?.RecipientName || 'Unknown',
+      recipientEmail: it.fields?.RecipientEmail || '',
+      description: it.fields?.MailDescription || '',
+      status: it.fields?.Status || 'Pending',
+      dateNotified: it.fields?.DateNotified || it.createdDateTime || null,
+      datePickedUp: it.fields?.DatePickedUp || null,
+      reminderSent: it.fields?.ReminderSent === true,
+    }));
+    // Newest first
+    return mapped.sort((a, b) => {
+      const da = a.dateNotified ? new Date(a.dateNotified).getTime() : 0;
+      const db = b.dateNotified ? new Date(b.dateNotified).getTime() : 0;
+      return db - da;
+    });
+  }, [rawData]);
 
   const pendingItems = items.filter((i) => i.status === 'Pending');
   const historyItems = items.filter((i) => i.status !== 'Pending');
