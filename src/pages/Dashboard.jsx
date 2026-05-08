@@ -397,7 +397,22 @@ function formatTimeAgo(date) {
 
 function safeParseDate(dateStr) {
   if (!dateStr) return null;
-  try { return parseISO(dateStr); } catch { return null; }
+  try {
+    const d = parseISO(dateStr);
+    return isNaN(d.getTime()) ? null : d;
+  } catch {
+    return null;
+  }
+}
+
+// Robust "is this date today in the user's local timezone?" check.
+// Doesn't rely on date-fns isToday (which had edge cases with the way
+// SharePoint sometimes returns date-only strings).
+function isSameLocalDay(d, now = new Date()) {
+  if (!d) return false;
+  return d.getFullYear() === now.getFullYear()
+    && d.getMonth() === now.getMonth()
+    && d.getDate() === now.getDate();
 }
 
 // ══════════════════════════════════════════════════════════
@@ -417,8 +432,11 @@ export default function Dashboard() {
     const monthStart = startOfMonth(today);
 
     const clientsToday = clientData.filter(i => {
-      const d = safeParseDate(i.fields?.DateOfInteraction);
-      return d && isToday(d);
+      // Prefer the user-set DateOfInteraction; fall back to createdDateTime
+      // for older entries that might be missing the field.
+      const dateStr = i.fields?.DateOfInteraction || i.createdDateTime;
+      const d = safeParseDate(dateStr);
+      return d && isSameLocalDay(d);
     }).length;
 
     const totalPeopleServed = clientData.reduce((sum, i) =>
