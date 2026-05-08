@@ -99,14 +99,41 @@ function buildFilterQuery(filters) {
   return `&$filter=${encodeURIComponent(parts.join(' and '))}`;
 }
 
+/**
+ * Fetch a SharePoint list page-by-page following @odata.nextLink so we always
+ * get every row, regardless of how big the list grows. Returns the same
+ * { value: [...] } shape callers already expect.
+ *
+ * Caps at 5000 rows as a sanity safety net (no current list approaches this).
+ */
+async function fetchAllItems(initialUrl, maxRows = 5000) {
+  let url = initialUrl;
+  const all = [];
+  let pages = 0;
+  while (url && all.length < maxRows && pages < 50) {
+    const page = await graphFetch(url);
+    if (page?.value?.length) all.push(...page.value);
+    // The nextLink is an absolute URL; graphFetch expects a path. Strip the base.
+    const next = page?.['@odata.nextLink'];
+    if (next) {
+      // graphFetch prepends GRAPH_BASE, so we need just the path+query
+      url = next.replace(/^https:\/\/graph\.microsoft\.com\/v1\.0/, '');
+    } else {
+      url = null;
+    }
+    pages++;
+  }
+  return { value: all };
+}
+
 // --- Supply Requests ---
 
 export async function getSupplyRequests(filters) {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.supplyRequests);
   const filterQuery = buildFilterQuery(filters);
-  return graphFetch(
-    `/sites/${siteId}/lists/${listId}/items?$expand=fields${filterQuery}`
+  return fetchAllItems(
+    `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500${filterQuery}`
   );
 }
 
@@ -133,8 +160,8 @@ export async function updateSupplyRequest(id, data) {
 export async function getInventoryItems() {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.inventory);
-  return graphFetch(
-    `/sites/${siteId}/lists/${listId}/items?$expand=fields`
+  return fetchAllItems(
+    `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`
   );
 }
 
@@ -274,8 +301,8 @@ export async function getClientLogEntries(filters) {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.clientLog);
   const filterQuery = buildFilterQuery(filters);
-  return graphFetch(
-    `/sites/${siteId}/lists/${listId}/items?$expand=fields${filterQuery}`
+  return fetchAllItems(
+    `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500${filterQuery}`
   );
 }
 
@@ -311,8 +338,8 @@ export async function getPurchaseOrders(filters) {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.purchaseOrders);
   const filterQuery = buildFilterQuery(filters);
-  return graphFetch(
-    `/sites/${siteId}/lists/${listId}/items?$expand=fields${filterQuery}`
+  return fetchAllItems(
+    `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500${filterQuery}`
   );
 }
 
@@ -339,9 +366,8 @@ export async function updatePurchaseOrder(id, data) {
 export async function getMailPickups() {
   const siteId = await getSiteId();
   const listId = await getListId(LIST_NAMES.mailPickups);
-  // Sort client-side: SharePoint refuses $orderby on non-indexed columns,
-  // and the Mail Pickups list is short-lived enough that this is fine.
-  return graphFetch(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=200`);
+  // Sort client-side: SharePoint refuses $orderby on non-indexed columns.
+  return fetchAllItems(`/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`);
 }
 
 export async function createMailPickup(data) {
