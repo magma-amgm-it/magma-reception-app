@@ -361,6 +361,14 @@ export async function updatePurchaseOrder(id, data) {
   });
 }
 
+export async function deletePurchaseOrder(id) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.purchaseOrders);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // --- Mail Pickups ---
 
 export async function getMailPickups() {

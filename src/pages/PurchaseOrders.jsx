@@ -13,11 +13,15 @@ import {
   Search,
   Filter as FilterIcon,
   Calendar,
+  Pencil,
+  Save,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 import { format, startOfDay, endOfDay, subDays, subMonths, startOfYear, endOfYear, startOfMonth } from 'date-fns';
 import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
-import { createPurchaseOrder, getVendorChoices, addVendorChoice } from '../services/graphApi';
+import { createPurchaseOrder, updatePurchaseOrder, deletePurchaseOrder, getVendorChoices, addVendorChoice } from '../services/graphApi';
 
 const statusColor = {
   Ordered: '#00d4ff',
@@ -324,14 +328,136 @@ export default function PurchaseOrders() {
     title: item.fields?.Title || 'Untitled',
     item: item.fields?.ItemOrdered || '—',
     vendor: item.fields?.Vendor || '—',
+    otherVendor: item.fields?.OtherVendor || '',
     department: item.fields?.ForDepartment || '—',
     status: item.fields?.OrderStatus || 'Ordered',
     cost: item.fields?.Cost ?? 0,
+    quantity: item.fields?.Quantity ?? '',
     rawDate: item.fields?.DateOrdered || item.createdDateTime || null,
+    rawExpectedDelivery: item.fields?.ExpectedDelivery || null,
     dateOrdered: formatDate(item.fields?.DateOrdered),
     expectedDelivery: formatDate(item.fields?.ExpectedDelivery),
     notes: item.fields?.Notes || '',
   })), [rawData]);
+
+  // ── Edit Order state ──
+  const [editingOrder, setEditingOrder] = useState(null);
+  const [editForm, setEditForm] = useState(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editSaveSuccess, setEditSaveSuccess] = useState(false);
+  const [editSaveError, setEditSaveError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletingOrder, setDeletingOrder] = useState(false);
+
+  const toLocalDate = (iso) => {
+    if (!iso) return '';
+    try {
+      const d = new Date(iso);
+      const pad = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+    } catch { return ''; }
+  };
+
+  const handleOpenEdit = (order) => {
+    setEditingOrder(order);
+    setEditForm({
+      Title: order.title,
+      ItemOrdered: order.item !== '—' ? order.item : '',
+      Quantity: order.quantity,
+      Vendor: order.vendor !== '—' ? order.vendor : '',
+      OtherVendor: order.otherVendor || '',
+      ForDepartment: order.department !== '—' ? order.department : '',
+      Cost: order.cost,
+      OrderStatus: order.status,
+      ExpectedDelivery: toLocalDate(order.rawExpectedDelivery),
+      Notes: order.notes,
+    });
+    setEditSaveError(null);
+    setEditSaveSuccess(false);
+    setShowDeleteConfirm(false);
+    setDeleteConfirmText('');
+  };
+
+  const handleCloseEdit = () => {
+    if (savingEdit || deletingOrder) return;
+    setEditingOrder(null);
+    setEditForm(null);
+    setShowDeleteConfirm(false);
+  };
+
+  const updateEditField = (key, value) => {
+    setEditForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveEdit = async (e) => {
+    e?.preventDefault?.();
+    if (savingEdit || !editForm) return;
+    if (!editForm.Title?.trim() || !editForm.ItemOrdered?.trim() || !editForm.Vendor || !editForm.ForDepartment || editForm.Cost === '' || editForm.Quantity === '') {
+      setEditSaveError('Please fill in all required fields');
+      return;
+    }
+    setSavingEdit(true);
+    setEditSaveError(null);
+    try {
+      const payload = {
+        Title: editForm.Title.trim(),
+        ItemOrdered: editForm.ItemOrdered.trim(),
+        Quantity: parseInt(editForm.Quantity, 10),
+        Vendor: editForm.Vendor,
+        OtherVendor: editForm.Vendor === 'Other' ? (editForm.OtherVendor || null) : null,
+        ForDepartment: editForm.ForDepartment,
+        Cost: parseFloat(editForm.Cost),
+        OrderStatus: editForm.OrderStatus,
+        ExpectedDelivery: editForm.ExpectedDelivery || null,
+        Notes: editForm.Notes || null,
+      };
+      await updatePurchaseOrder(editingOrder.id, payload);
+      setEditSaveSuccess(true);
+      refresh();
+      setTimeout(() => {
+        setEditingOrder(null);
+        setEditForm(null);
+        setEditSaveSuccess(false);
+      }, 1000);
+    } catch (err) {
+      setEditSaveError(err.message || 'Failed to save changes');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
+  const handleDeleteOrder = async () => {
+    if (deletingOrder || !editingOrder) return;
+    if (deleteConfirmText.trim() !== editingOrder.title.trim()) {
+      setEditSaveError(`Type the order title exactly: "${editingOrder.title}"`);
+      return;
+    }
+    setDeletingOrder(true);
+    setEditSaveError(null);
+    try {
+      await deletePurchaseOrder(editingOrder.id);
+      refresh();
+      setEditingOrder(null);
+      setEditForm(null);
+      setShowDeleteConfirm(false);
+    } catch (err) {
+      setEditSaveError(err.message || 'Failed to delete order');
+    } finally {
+      setDeletingOrder(false);
+    }
+  };
+
+  // Quick status change directly from the row (without opening full modal)
+  const handleQuickStatusChange = async (orderId, newStatus) => {
+    try {
+      await updatePurchaseOrder(orderId, { OrderStatus: newStatus });
+      refresh();
+    } catch (err) {
+      console.error('Quick status update failed:', err);
+      alert('Failed to update status: ' + err.message);
+    }
+  };
 
   // ── Apply filters ──
   const filteredOrders = useMemo(() => {
@@ -526,8 +652,20 @@ export default function PurchaseOrders() {
                 </tr>
               )}
               {filteredOrders.map((order) => (
-                <motion.tr key={order.id} style={{ cursor: 'pointer' }} whileHover={{ backgroundColor: 'rgba(255,255,255,0.03)' }} transition={{ duration: 0.15 }}>
-                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--text-primary)' }}>{order.title}</td>
+                <motion.tr
+                  key={order.id}
+                  style={{ cursor: 'pointer' }}
+                  whileHover={{ backgroundColor: 'rgba(0,212,255,0.06)' }}
+                  transition={{ duration: 0.15 }}
+                  onClick={() => handleOpenEdit(order)}
+                  title="Click to edit this order"
+                >
+                  <td style={{ ...s.td, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                      {order.title}
+                      <Pencil size={11} color="var(--text-dim)" style={{ opacity: 0.4 }} />
+                    </span>
+                  </td>
                   <td style={s.td}>{order.item}</td>
                   <td style={s.td}>{order.vendor}</td>
                   <td style={{ ...s.td, color: 'var(--text-muted)' }}>{order.department}</td>
@@ -654,6 +792,139 @@ export default function PurchaseOrders() {
                   : 'Create Purchase Order'}
               </button>
               <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Edit Order Modal ── */}
+      <AnimatePresence>
+        {editingOrder && editForm && (
+          <motion.div style={f.overlay} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            onClick={(e) => e.target === e.currentTarget && handleCloseEdit()}>
+            <motion.div style={f.modal} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}>
+              <div style={f.title}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Pencil size={18} color="#00d4ff" />
+                  Edit Purchase Order
+                </span>
+                <button style={f.closeBtn} onClick={handleCloseEdit} disabled={savingEdit || deletingOrder}><X size={20} /></button>
+              </div>
+
+              <form onSubmit={handleSaveEdit}>
+                <div style={f.group}>
+                  <label style={f.label}>Order Title *</label>
+                  <input style={f.input} value={editForm.Title} onChange={(e) => updateEditField('Title', e.target.value)} />
+                </div>
+
+                <div style={f.row2}>
+                  <div>
+                    <label style={f.label}>Item Ordered *</label>
+                    <input style={f.input} value={editForm.ItemOrdered} onChange={(e) => updateEditField('ItemOrdered', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={f.label}>Quantity *</label>
+                    <input style={f.input} type="number" min="1" value={editForm.Quantity} onChange={(e) => updateEditField('Quantity', e.target.value)} />
+                  </div>
+                </div>
+
+                <div style={f.group}>
+                  <label style={f.label}>Status *</label>
+                  <select style={f.input} value={editForm.OrderStatus} onChange={(e) => updateEditField('OrderStatus', e.target.value)}>
+                    <option value="Ordered">Ordered</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Received">Received</option>
+                    <option value="Delegated">Delegated</option>
+                    <option value="Cancelled">Cancelled</option>
+                  </select>
+                </div>
+
+                <div style={f.group}>
+                  <label style={f.label}>Vendor *</label>
+                  <div style={f.selectRow}>
+                    <select style={{ ...f.input, flex: 1, minWidth: 180 }} value={editForm.Vendor} onChange={(e) => updateEditField('Vendor', e.target.value)}>
+                      <option value="">Choose a vendor...</option>
+                      {vendors.map((v) => <option key={v} value={v}>{v}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                {editForm.Vendor === 'Other' && (
+                  <div style={f.group}>
+                    <label style={f.label}>Specify Vendor</label>
+                    <input style={f.input} placeholder="Vendor name" value={editForm.OtherVendor} onChange={(e) => updateEditField('OtherVendor', e.target.value)} />
+                  </div>
+                )}
+
+                <div style={f.group}>
+                  <label style={f.label}>Department *</label>
+                  <select style={f.input} value={editForm.ForDepartment} onChange={(e) => updateEditField('ForDepartment', e.target.value)}>
+                    <option value="">Choose a department...</option>
+                    {deptChoices.map((d) => <option key={d} value={d}>{d}</option>)}
+                  </select>
+                </div>
+
+                <div style={f.row2}>
+                  <div>
+                    <label style={f.label}>Total Cost ($) *</label>
+                    <input style={f.input} type="number" min="0" step="0.01" value={editForm.Cost} onChange={(e) => updateEditField('Cost', e.target.value)} />
+                  </div>
+                  <div>
+                    <label style={f.label}>Expected Delivery</label>
+                    <input style={f.input} type="date" value={editForm.ExpectedDelivery} onChange={(e) => updateEditField('ExpectedDelivery', e.target.value)} />
+                  </div>
+                </div>
+
+                <div style={f.group}>
+                  <label style={f.label}>Notes (optional)</label>
+                  <textarea style={f.textarea} value={editForm.Notes} onChange={(e) => updateEditField('Notes', e.target.value)} />
+                </div>
+
+                {editSaveError && <div style={f.error}>{editSaveError}</div>}
+
+                <button type="submit" style={f.submitBtn(savingEdit, editSaveSuccess)} disabled={savingEdit || deletingOrder}>
+                  {savingEdit ? <><Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> Saving...</>
+                    : editSaveSuccess ? <><Check size={18} /> Saved!</>
+                    : <><Save size={18} /> Save Changes</>}
+                </button>
+
+                {/* Delete section */}
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--glass-border)' }}>
+                  {!showDeleteConfirm ? (
+                    <button
+                      type="button"
+                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', color: '#ff3d5a', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      onClick={() => setShowDeleteConfirm(true)} disabled={savingEdit}>
+                      <Trash2 size={14} /> Delete This Order
+                    </button>
+                  ) : (
+                    <div style={{ background: 'rgba(255,61,90,0.08)', border: '1px solid rgba(255,61,90,0.3)', borderRadius: 10, padding: 14 }}>
+                      <div style={{ color: '#ff3d5a', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <AlertTriangle size={14} /> This cannot be undone
+                      </div>
+                      <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
+                        Type the order title <strong style={{ color: 'var(--text-primary)' }}>{editingOrder.title}</strong> below to confirm deletion:
+                      </div>
+                      <input style={{ ...f.input, marginBottom: 10 }} placeholder={editingOrder.title}
+                        value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} disabled={deletingOrder} />
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                          onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setEditSaveError(null); }}
+                          disabled={deletingOrder}>
+                          Cancel
+                        </button>
+                        <button type="button"
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#ff3d5a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deletingOrder ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          onClick={handleDeleteOrder}
+                          disabled={deletingOrder || deleteConfirmText.trim() !== editingOrder.title.trim()}>
+                          {deletingOrder ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete Permanently</>}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </form>
             </motion.div>
           </motion.div>
         )}
