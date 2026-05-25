@@ -408,11 +408,27 @@ export async function deleteMailPickup(id) {
 
 export async function searchOrgUsers(query) {
   if (!query || query.trim().length < 2) return [];
-  const q = encodeURIComponent(query.trim());
-  // Search by displayName OR mail OR userPrincipalName, accounts only
-  const filter = `accountEnabled eq true and (startswith(displayName,'${q.replace(/'/g, "''")}') or startswith(givenName,'${q.replace(/'/g, "''")}') or startswith(surname,'${q.replace(/'/g, "''")}') or startswith(mail,'${q.replace(/'/g, "''")}'))`;
+  const term = query.trim();
+  // Use $search (substring match across displayName, givenName, surname, mail,
+  // mailNickname, otherMails) instead of $filter+startswith. More forgiving,
+  // and only requires one round-trip. NOTE: $search on /users is an
+  // "advanced query" — it REQUIRES the ConsistencyLevel: eventual header
+  // or it returns empty/partial results silently. That was the bug.
   try {
-    const result = await graphFetch(`/users?$filter=${encodeURIComponent(filter)}&$select=id,displayName,mail,userPrincipalName,jobTitle&$top=10`);
+    const token = await getAccessToken();
+    const url = `${GRAPH_BASE}/users?$search=${encodeURIComponent(`"${term}"`)}&$select=id,displayName,mail,userPrincipalName,jobTitle&$top=10`;
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        ConsistencyLevel: 'eventual',
+      },
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`User search ${res.status}: ${errText.slice(0, 200)}`);
+    }
+    const result = await res.json();
     return (result.value || [])
       .map((u) => ({
         id: u.id,
