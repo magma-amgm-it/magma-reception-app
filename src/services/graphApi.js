@@ -408,15 +408,15 @@ export async function deleteMailPickup(id) {
 
 export async function searchOrgUsers(query) {
   if (!query || query.trim().length < 2) return [];
-  const term = query.trim();
-  // Use $search (substring match across displayName, givenName, surname, mail,
-  // mailNickname, otherMails) instead of $filter+startswith. More forgiving,
-  // and only requires one round-trip. NOTE: $search on /users is an
-  // "advanced query" — it REQUIRES the ConsistencyLevel: eventual header
-  // or it returns empty/partial results silently. That was the bug.
+  const term = query.trim().replace(/"/g, ''); // strip any quotes the user typed
+  // Graph $search on /users requires "property:value" format, with OR between
+  // multiple clauses. Searches across the common name + email fields so
+  // typing partial first name, last name, or email all work.
+  // Header: ConsistencyLevel: eventual is REQUIRED.
+  const searchClause = `"displayName:${term}" OR "givenName:${term}" OR "surname:${term}" OR "mail:${term}"`;
   try {
     const token = await getAccessToken();
-    const url = `${GRAPH_BASE}/users?$search=${encodeURIComponent(`"${term}"`)}&$select=id,displayName,mail,userPrincipalName,jobTitle&$top=10`;
+    const url = `${GRAPH_BASE}/users?$search=${encodeURIComponent(searchClause)}&$select=id,displayName,mail,userPrincipalName,jobTitle&$top=15`;
     const res = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`,
