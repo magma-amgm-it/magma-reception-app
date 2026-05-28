@@ -218,7 +218,14 @@ export default function SupplyRequests() {
   const requests = rawData.map((item) => ({
     id: item.id,
     title: item.fields?.Title || 'Untitled',
-    requester: item.fields?.RequestedBy?.LookupValue || item.fields?.RequestedBy || '—',
+    // Prefer the explicit RequestedBy person column if set;
+    // fall back to the system createdBy.user.displayName (always populated
+    // by SharePoint to whoever submitted the entry).
+    requester:
+      item.fields?.RequestedBy?.LookupValue ||
+      item.fields?.RequestedBy ||
+      item.createdBy?.user?.displayName ||
+      '—',
     department: item.fields?.Department || '—',
     urgency: item.fields?.Urgency || 'Normal',
     date: formatDate(item.fields?.DateOfRequest),
