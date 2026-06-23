@@ -433,6 +433,14 @@ export async function updateFeedback(id, data) {
   });
 }
 
+export async function deleteFeedback(id) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.appFeedback);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 // --- Org user search (type-ahead picker for Mail Pickup recipient) ---
 
 export async function searchOrgUsers(query) {

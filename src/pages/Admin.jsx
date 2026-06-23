@@ -24,6 +24,10 @@ import {
   LayoutDashboard,
   ExternalLink,
   ChevronRight,
+  X,
+  Trash2,
+  Save,
+  Loader2,
 } from 'lucide-react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
@@ -34,7 +38,8 @@ import PageWrapper from '../components/Layout/PageWrapper';
 import { useSharePointList } from '../hooks/useSharePointList';
 import { useAuth } from '../hooks/useAuth';
 import { isAdmin } from '../services/admin';
-import { updateFeedback } from '../services/graphApi';
+import { updateFeedback, deleteFeedback } from '../services/graphApi';
+import { AnimatePresence } from 'framer-motion';
 
 // ─── Helpers ───────────────────────────────────────
 const parseDate = (val) => {
@@ -124,8 +129,333 @@ function StatCard({ icon: Icon, label, value, sublabel, color = '#00d4ff', delay
   );
 }
 
+// ─── Sub-component: Feedback detail modal ─────────
+function FeedbackDetailModal({ item, onClose, onChanged }) {
+  const f = item.fields || {};
+  const [status, setStatus] = useState(f.Status || 'New');
+  const [adminNotes, setAdminNotes] = useState(f.AdminNotes || '');
+  const [implementedCommit, setImplementedCommit] = useState(f.ImplementedCommit || '');
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const user = getItemUser(item);
+  const created = parseDate(item.createdDateTime);
+  const type = f.FeedbackType || 'Other';
+  const meta = FEEDBACK_TYPE_META[type] || FEEDBACK_TYPE_META.Other;
+  const Icon = meta.icon;
+
+  const dirty = status !== (f.Status || 'New')
+    || adminNotes !== (f.AdminNotes || '')
+    || implementedCommit !== (f.ImplementedCommit || '');
+
+  const handleSave = async () => {
+    setSaving(true); setError(null);
+    try {
+      await updateFeedback(item.id, {
+        Status: status,
+        AdminNotes: adminNotes,
+        ImplementedCommit: implementedCommit,
+      });
+      await onChanged();
+      onClose();
+    } catch (err) {
+      console.error('Save failed', err);
+      setError(err.message || 'Save failed.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true); setError(null);
+    try {
+      await deleteFeedback(item.id);
+      await onChanged();
+      onClose();
+    } catch (err) {
+      console.error('Delete failed', err);
+      setError(err.message || 'Delete failed.');
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 500,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 24, scale: 0.96 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(620px, 100%)',
+          maxHeight: '90vh',
+          overflow: 'auto',
+          background: 'rgba(22, 27, 34, 0.96)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 20,
+          padding: 28,
+          color: '#e6edf3',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+          <div style={{
+            width: 40, height: 40, borderRadius: 12,
+            background: `${meta.color}20`, border: `1px solid ${meta.color}40`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Icon size={20} color={meta.color} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 11, color: meta.color, fontWeight: 700, letterSpacing: 0.5 }}>
+              {type.toUpperCase()} · {f.Severity || 'Medium'} severity
+            </div>
+            <div style={{ fontSize: 13, color: '#8b949e' }}>
+              From <strong style={{ color: '#e6edf3' }}>{user.name}</strong> on {f.Page || '—'}
+              {created && <> · {format(created, 'MMM d, yyyy h:mm a')}</>}
+            </div>
+          </div>
+          <button onClick={onClose} style={{
+            width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent',
+            color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}><X size={18} /></button>
+        </div>
+
+        {/* Description */}
+        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+          Description
+        </label>
+        <div style={{
+          padding: 14, borderRadius: 10, marginBottom: 18,
+          background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)',
+          fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
+        }}>
+          {f.Description || '(no description)'}
+        </div>
+
+        {/* Status */}
+        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+          Status
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
+          {['New', 'In Review', 'In Progress', 'Done', "Won't Do"].map((s) => {
+            const active = status === s;
+            const c = STATUS_COLORS[s] || '#8b949e';
+            return (
+              <button
+                key={s}
+                onClick={() => setStatus(s)}
+                style={{
+                  padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  background: active ? `${c}25` : 'rgba(255,255,255,0.04)',
+                  border: `1px solid ${active ? `${c}60` : 'rgba(255,255,255,0.08)'}`,
+                  color: active ? c : '#e6edf3',
+                }}
+              >{s}</button>
+            );
+          })}
+        </div>
+
+        {/* Admin notes */}
+        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+          Admin notes (only you see this)
+        </label>
+        <textarea
+          value={adminNotes}
+          onChange={(e) => setAdminNotes(e.target.value)}
+          rows={3}
+          placeholder="Triage notes, plan, follow-ups…"
+          style={{
+            width: '100%', padding: 12, borderRadius: 10, boxSizing: 'border-box',
+            background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)',
+            color: '#e6edf3', fontSize: 13, fontFamily: 'inherit', resize: 'vertical',
+            outline: 'none', marginBottom: 14,
+          }}
+        />
+
+        {/* Implemented commit */}
+        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+          Implemented commit (optional)
+        </label>
+        <input
+          type="text"
+          value={implementedCommit}
+          onChange={(e) => setImplementedCommit(e.target.value)}
+          placeholder="e.g. ab3f576"
+          style={{
+            width: '100%', padding: '10px 12px', borderRadius: 10, boxSizing: 'border-box',
+            background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)',
+            color: '#e6edf3', fontSize: 13, fontFamily: 'monospace',
+            outline: 'none', marginBottom: 18,
+          }}
+        />
+
+        {error && (
+          <div style={{
+            padding: '10px 14px', borderRadius: 8, marginBottom: 14,
+            background: 'rgba(255,61,90,0.1)', border: '1px solid rgba(255,61,90,0.2)',
+            color: '#ff3d5a', fontSize: 13,
+          }}>{error}</div>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              style={{
+                padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
+                background: 'transparent', border: '1px solid rgba(255,61,90,0.25)',
+                color: '#ff3d5a', fontSize: 12, fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              <Trash2 size={13} /> Delete
+            </button>
+          ) : (
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: '#ff3d5a' }}>Sure?</span>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                  background: 'rgba(255,61,90,0.2)', border: '1px solid rgba(255,61,90,0.4)',
+                  color: '#ff3d5a', fontSize: 12, fontWeight: 600,
+                }}
+              >{deleting ? 'Deleting…' : 'Yes, delete'}</button>
+              <button
+                onClick={() => setConfirmDelete(false)}
+                style={{
+                  padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
+                  background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+                  color: '#e6edf3', fontSize: 12,
+                }}
+              >Cancel</button>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              onClick={onClose}
+              style={{
+                padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
+                background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
+                color: '#e6edf3', fontSize: 13, fontWeight: 500,
+              }}
+            >Close</button>
+            <button
+              onClick={handleSave}
+              disabled={!dirty || saving}
+              style={{
+                padding: '10px 18px', borderRadius: 10,
+                cursor: !dirty || saving ? 'not-allowed' : 'pointer',
+                background: !dirty || saving ? 'rgba(0,212,255,0.15)' : 'linear-gradient(135deg, #00d4ff, #a855f7)',
+                border: 'none', color: '#fff', fontSize: 13, fontWeight: 600,
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}
+            >
+              {saving ? <><Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> Saving…</> : <><Save size={13} /> Save changes</>}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Sub-component: All users modal ───────────────
+function AllUsersModal({ users, onClose }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 500,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 24, scale: 0.96 }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: 'min(540px, 100%)',
+          maxHeight: '85vh',
+          display: 'flex', flexDirection: 'column',
+          background: 'rgba(22, 27, 34, 0.96)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.08)',
+          borderRadius: 20,
+          padding: 24,
+          color: '#e6edf3',
+          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Users size={18} color="#00d4ff" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>All users (last 30 days)</h3>
+            <span style={{ fontSize: 12, color: '#8b949e' }}>({users.length})</span>
+          </div>
+          <button onClick={onClose} style={{
+            width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent',
+            color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}><X size={18} /></button>
+        </div>
+        {users.length === 0 ? (
+          <div style={{ padding: 32, textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+            No user activity in the last 30 days.
+          </div>
+        ) : (
+          <div style={{ overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 6, paddingRight: 4 }}>
+            {users.map((u, i) => {
+              const max = users[0].count;
+              const pct = (u.count / max) * 100;
+              return (
+                <div key={u.email || `u-${i}`} style={{
+                  display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: 10, alignItems: 'center',
+                  padding: '8px 4px',
+                }}>
+                  <span style={{ fontSize: 11, color: '#8b949e', fontWeight: 600 }}>#{i + 1}</span>
+                  <div>
+                    <div style={{ fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>{u.name}</div>
+                    <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #00d4ff, #a855f7)' }} />
+                    </div>
+                    {u.email && (
+                      <div style={{ fontSize: 10, color: '#484f58', marginTop: 4, fontFamily: 'monospace' }}>{u.email}</div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 14, color: '#e6edf3', fontWeight: 600 }}>{u.count}</span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
 // ─── Sub-component: Feedback inbox ─────────────────
-function FeedbackInbox({ feedback, onRefresh }) {
+function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
   const [statusFilter, setStatusFilter] = useState('All');
   const [updating, setUpdating] = useState(null);
 
@@ -206,6 +536,8 @@ function FeedbackInbox({ feedback, onRefresh }) {
             return (
               <div
                 key={item.id}
+                onClick={() => onCardClick && onCardClick(item)}
+                title="Click to manage"
                 style={{
                   padding: 14,
                   borderRadius: 12,
@@ -215,6 +547,16 @@ function FeedbackInbox({ feedback, onRefresh }) {
                   gridTemplateColumns: 'auto 1fr auto',
                   gap: 12,
                   alignItems: 'start',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(0,212,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(0,212,255,0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
                 }}
               >
                 <div style={{
@@ -247,9 +589,9 @@ function FeedbackInbox({ feedback, onRefresh }) {
                 </div>
 
                 <button
-                  onClick={() => cycleStatus(item)}
+                  onClick={(e) => { e.stopPropagation(); cycleStatus(item); }}
                   disabled={updating === item.id}
-                  title="Click to cycle status"
+                  title="Click to cycle status (or click anywhere on row to manage)"
                   style={{
                     padding: '6px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
                     background: `${statusColor}25`,
@@ -353,6 +695,10 @@ export default function Admin() {
   const mailPickups = useSharePointList('mailPickups');
   const feedback = useSharePointList('appFeedback');
 
+  // Modals
+  const [showAllUsers, setShowAllUsers] = useState(false);
+  const [selectedFeedback, setSelectedFeedback] = useState(null);
+
   // Gate: redirect non-admins to Dashboard
   if (!authLoading && user && !isAdmin(user.email)) {
     navigate('/', { replace: true });
@@ -425,7 +771,8 @@ export default function Admin() {
         userCounts[key].count++;
       }
     });
-    const topUsers = Object.values(userCounts).sort((a, b) => b.count - a.count).slice(0, 10);
+    const allUsersSorted = Object.values(userCounts).sort((a, b) => b.count - a.count);
+    const topUsers = allUsersSorted.slice(0, 10);
 
     // Activity by department (Supply Requests)
     const deptCounts = {};
@@ -468,6 +815,7 @@ export default function Admin() {
       actionsToday,
       activeUsers7d: usersIn7d.size,
       topUsers,
+      allUsers: allUsersSorted,
       deptData,
       funnelData,
       heatmap,
@@ -553,9 +901,23 @@ export default function Admin() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 16, marginBottom: 16 }}>
         {/* Top Users */}
         <div style={{ ...cardStyle }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <Users size={18} color="#00d4ff" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Top Users (30d)</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Users size={18} color="#00d4ff" />
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Top Users (30d)</h3>
+            </div>
+            {analytics.allUsers.length > 10 && (
+              <button
+                onClick={() => setShowAllUsers(true)}
+                style={{
+                  padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+                  background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)',
+                  color: '#00d4ff',
+                }}
+              >
+                View all {analytics.allUsers.length}
+              </button>
+            )}
           </div>
           {analytics.topUsers.length === 0 ? (
             <div style={{ padding: 24, textAlign: 'center', color: '#8b949e', fontSize: 12 }}>
@@ -745,7 +1107,11 @@ export default function Admin() {
 
       {/* Feedback inbox spans full width */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
-        <FeedbackInbox feedback={feedback.data} onRefresh={feedback.refresh} />
+        <FeedbackInbox
+          feedback={feedback.data}
+          onRefresh={feedback.refresh}
+          onCardClick={(item) => setSelectedFeedback(item)}
+        />
       </div>
 
       {stillLoading && (
@@ -759,6 +1125,20 @@ export default function Admin() {
           Loading data…
         </div>
       )}
+
+      {/* Modals */}
+      <AnimatePresence>
+        {showAllUsers && (
+          <AllUsersModal users={analytics.allUsers} onClose={() => setShowAllUsers(false)} />
+        )}
+        {selectedFeedback && (
+          <FeedbackDetailModal
+            item={selectedFeedback}
+            onClose={() => setSelectedFeedback(null)}
+            onChanged={feedback.refresh}
+          />
+        )}
+      </AnimatePresence>
     </PageWrapper>
   );
 }
