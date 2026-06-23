@@ -5,6 +5,7 @@ import {
   getClientLogEntries,
   getPurchaseOrders,
   getMailPickups,
+  getFeedbackItems,
 } from '../services/graphApi';
 
 const LIST_FETCHERS = {
@@ -13,6 +14,7 @@ const LIST_FETCHERS = {
   clientLog: getClientLogEntries,
   purchaseOrders: getPurchaseOrders,
   mailPickups: getMailPickups,
+  appFeedback: getFeedbackItems,
 };
 
 const REFRESH_INTERVAL = 60 * 1000; // 60 seconds

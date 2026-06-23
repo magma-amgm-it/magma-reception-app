@@ -11,8 +11,10 @@ import {
   X,
   BellRing,
   LogOut,
+  Wrench,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { isAdmin } from '../../services/admin';
 import './Sidebar.css';
 
 const navItems = [
@@ -24,12 +26,16 @@ const navItems = [
   { to: '/mail', icon: Mail, label: 'Mail Pickup' },
 ];
 
+const adminNavItem = { to: '/admin', icon: Wrench, label: 'Admin', adminOnly: true };
+
 export default function Sidebar() {
   const [open, setOpen] = useState(false);
   const { user, logout } = useAuth();
 
   const userName = user?.name || 'User';
   const userInitial = userName.charAt(0).toUpperCase();
+  const showAdmin = isAdmin(user?.email);
+  const visibleNavItems = showAdmin ? [...navItems, adminNavItem] : navItems;
 
   return (
     <>
@@ -150,7 +156,7 @@ export default function Sidebar() {
 
             {/* Navigation */}
             <nav className="sidebar-nav">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}

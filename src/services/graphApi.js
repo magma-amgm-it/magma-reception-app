@@ -9,6 +9,7 @@ const LIST_NAMES = {
   clientLog: 'Client Log',
   purchaseOrders: 'Purchase Orders',
   mailPickups: 'Mail Pickups',
+  appFeedback: 'App Feedback',
 };
 
 // --- Helpers ---
@@ -404,6 +405,34 @@ export async function deleteMailPickup(id) {
   });
 }
 
+// --- App Feedback ---
+
+export async function getFeedbackItems() {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.appFeedback);
+  return fetchAllItems(
+    `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=500`
+  );
+}
+
+export async function createFeedback(data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.appFeedback);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items`, {
+    method: 'POST',
+    body: { fields: data },
+  });
+}
+
+export async function updateFeedback(id, data) {
+  const siteId = await getSiteId();
+  const listId = await getListId(LIST_NAMES.appFeedback);
+  return graphFetch(`/sites/${siteId}/lists/${listId}/items/${id}/fields`, {
+    method: 'PATCH',
+    body: data,
+  });
+}
+
 // --- Org user search (type-ahead picker for Mail Pickup recipient) ---
 
 export async function searchOrgUsers(query) {
@@ -450,4 +479,26 @@ export function clearGraphCache() {
   Object.values(LIST_NAMES).forEach((name) => {
     localStorage.removeItem(`magma_list_id_${name}`);
   });
+}
+
+// --- Generic list-item search (used by Admin live activity feed) ---
+
+export async function getRecentItemsAcrossLists(listKeys, perListLimit = 100) {
+  const siteId = await getSiteId();
+  const fetches = listKeys.map(async (key) => {
+    const listName = LIST_NAMES[key];
+    if (!listName) return [];
+    try {
+      const listId = await getListId(listName);
+      const page = await graphFetch(
+        `/sites/${siteId}/lists/${listId}/items?$expand=fields&$top=${perListLimit}&$orderby=lastModifiedDateTime desc`
+      );
+      return (page?.value || []).map((item) => ({ ...item, __listKey: key }));
+    } catch (err) {
+      console.warn(`Recent items fetch failed for ${listName}:`, err.message);
+      return [];
+    }
+  });
+  const results = await Promise.all(fetches);
+  return results.flat();
 }

@@ -8,6 +8,8 @@ import SupplyRequests from './pages/SupplyRequests';
 import Inventory from './pages/Inventory';
 import PurchaseOrders from './pages/PurchaseOrders';
 import MailPickup from './pages/MailPickup';
+import Admin from './pages/Admin';
+import FeedbackWidget from './components/FeedbackWidget';
 import { msalInstance, loginRequest, initializeMsal, getAccessToken } from './services/auth';
 import { BellRing, LogIn, Shield, Loader2 } from 'lucide-react';
 
@@ -207,6 +209,7 @@ export default function App() {
   return (
     <BrowserRouter basename="/magma-reception-app">
       <Sidebar />
+      <FeedbackWidget />
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -215,6 +218,7 @@ export default function App() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/orders" element={<PurchaseOrders />} />
           <Route path="/mail" element={<MailPickup />} />
+          <Route path="/admin" element={<Admin />} />
         </Routes>
       </AnimatePresence>
     </BrowserRouter>
