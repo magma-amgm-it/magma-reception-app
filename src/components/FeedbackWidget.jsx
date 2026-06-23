@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,6 +11,7 @@ import {
   MoreHorizontal,
   Loader2,
   Check,
+  Lightbulb,
 } from 'lucide-react';
 import { createFeedback } from '../services/graphApi';
 import { useAuth } from '../hooks/useAuth';
@@ -35,6 +36,9 @@ const PAGE_LABELS = {
   '/admin': 'Admin Dashboard',
 };
 
+const INTRO_DURATION_MS = 6000;
+const introStorageKey = (email) => `magma_feedback_intro_dismissed_${(email || 'anon').toLowerCase()}`;
+
 export default function FeedbackWidget() {
   const [open, setOpen] = useState(false);
   const [feedbackType, setFeedbackType] = useState('Bug');
@@ -43,10 +47,36 @@ export default function FeedbackWidget() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(null);
+  const [showIntro, setShowIntro] = useState(false);
   const location = useLocation();
   const { user } = useAuth();
 
   const currentPage = PAGE_LABELS[location.pathname] || location.pathname;
+
+  // Intro tooltip: show once ever per user, dismiss permanently after
+  useEffect(() => {
+    if (!user?.email) return;
+    const key = introStorageKey(user.email);
+    if (localStorage.getItem(key)) return;
+    // small delay so it doesn't fight the page-load animation
+    const showTimer = setTimeout(() => setShowIntro(true), 800);
+    return () => clearTimeout(showTimer);
+  }, [user?.email]);
+
+  // Auto-dismiss after 6s
+  useEffect(() => {
+    if (!showIntro) return;
+    const timer = setTimeout(() => dismissIntro(), INTRO_DURATION_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showIntro]);
+
+  const dismissIntro = () => {
+    if (user?.email) {
+      localStorage.setItem(introStorageKey(user.email), new Date().toISOString());
+    }
+    setShowIntro(false);
+  };
 
   const reset = () => {
     setFeedbackType('Bug');
@@ -55,6 +85,11 @@ export default function FeedbackWidget() {
     setError(null);
     setSuccess(false);
     setSubmitting(false);
+  };
+
+  const handleOpen = () => {
+    dismissIntro();
+    setOpen(true);
   };
 
   const handleSubmit = async (e) => {
@@ -88,9 +123,17 @@ export default function FeedbackWidget() {
 
   return (
     <>
+      {/* Pulse keyframes injected once */}
+      <style>{`
+        @keyframes feedbackPulse {
+          0%, 100% { box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35), 0 0 0 0 rgba(168, 85, 247, 0.55); }
+          50%      { box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35), 0 0 0 14px rgba(168, 85, 247, 0); }
+        }
+      `}</style>
+
       {/* Floating button — bottom-right on every page */}
       <motion.button
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         aria-label="Send feedback"
@@ -111,41 +154,132 @@ export default function FeedbackWidget() {
           alignItems: 'center',
           justifyContent: 'center',
           boxShadow: '0 8px 24px rgba(0, 212, 255, 0.35)',
+          animation: showIntro ? 'feedbackPulse 1.6s ease-in-out infinite' : 'none',
         }}
       >
         <MessageSquare size={24} />
       </motion.button>
 
-      {/* Modal */}
+      {/* Intro tooltip — first ever sign-in, 6s, dismisses forever */}
+      <AnimatePresence>
+        {showIntro && !open && (
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.9 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            onClick={handleOpen}
+            style={{
+              position: 'fixed',
+              bottom: 94,
+              right: 24,
+              zIndex: 251,
+              maxWidth: 280,
+              padding: '14px 16px',
+              borderRadius: 14,
+              background: 'linear-gradient(135deg, rgba(22,27,34,0.96), rgba(13,17,23,0.96))',
+              backdropFilter: 'blur(20px)',
+              border: '1px solid rgba(168, 85, 247, 0.35)',
+              boxShadow: '0 12px 32px rgba(0,0,0,0.4), 0 0 24px rgba(168,85,247,0.15)',
+              cursor: 'pointer',
+              color: '#e6edf3',
+            }}
+          >
+            {/* Speech-bubble tail pointing to button */}
+            <div style={{
+              position: 'absolute',
+              bottom: -7,
+              right: 26,
+              width: 14,
+              height: 14,
+              background: 'rgba(13,17,23,0.96)',
+              borderRight: '1px solid rgba(168, 85, 247, 0.35)',
+              borderBottom: '1px solid rgba(168, 85, 247, 0.35)',
+              transform: 'rotate(45deg)',
+            }} />
+
+            <button
+              onClick={(e) => { e.stopPropagation(); dismissIntro(); }}
+              aria-label="Dismiss"
+              style={{
+                position: 'absolute',
+                top: 6,
+                right: 6,
+                width: 22,
+                height: 22,
+                borderRadius: 6,
+                border: 'none',
+                background: 'transparent',
+                color: '#8b949e',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
+              <X size={13} />
+            </button>
+
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingRight: 14 }}>
+              <div style={{
+                width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2))',
+                border: '1px solid rgba(168,85,247,0.3)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Lightbulb size={15} color="#ffab00" />
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{
+                  fontSize: 10, color: '#a855f7', fontWeight: 700, letterSpacing: 1,
+                  marginBottom: 4,
+                }}>
+                  NEW
+                </div>
+                <div style={{ fontSize: 13, lineHeight: 1.45, fontWeight: 500 }}>
+                  Got an idea? Found a bug? Let me know!
+                </div>
+                <div style={{ fontSize: 11, color: '#8b949e', marginTop: 6 }}>
+                  Click anywhere on this card to start.
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal — centered via flexbox parent so framer transforms don't fight */}
       <AnimatePresence>
         {open && (
-          <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            onClick={() => !submitting && setOpen(false)}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0, 0, 0, 0.6)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
+              zIndex: 400,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 16,
+            }}
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              onClick={() => !submitting && setOpen(false)}
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0, 0, 0, 0.6)',
-                backdropFilter: 'blur(6px)',
-                WebkitBackdropFilter: 'blur(6px)',
-                zIndex: 400,
-              }}
-            />
-            <motion.div
-              initial={{ opacity: 0, y: 30, scale: 0.96 }}
+              initial={{ opacity: 0, y: 24, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 30, scale: 0.96 }}
+              exit={{ opacity: 0, y: 24, scale: 0.96 }}
               transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              onClick={(e) => e.stopPropagation()}
               style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                width: 'min(520px, 92vw)',
+                width: 'min(520px, 100%)',
                 maxHeight: '90vh',
                 overflow: 'auto',
                 background: 'rgba(22, 27, 34, 0.95)',
@@ -153,7 +287,6 @@ export default function FeedbackWidget() {
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 20,
                 padding: 28,
-                zIndex: 401,
                 color: '#e6edf3',
                 boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
               }}
@@ -359,7 +492,7 @@ export default function FeedbackWidget() {
                 </form>
               )}
             </motion.div>
-          </>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
