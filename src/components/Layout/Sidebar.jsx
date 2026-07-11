@@ -14,12 +14,13 @@ import {
   Wrench,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { isAdmin } from '../../services/admin';
+import { isAdmin, isReception } from '../../services/admin';
+import magmaRing from '../../assets/magma-ring.png';
 import './Sidebar.css';
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/clients', icon: Users, label: 'Client Log' },
+  { to: '/clients', icon: Users, label: 'Client Log', receptionOnly: true },
   { to: '/requests', icon: PackageSearch, label: 'Supply Requests' },
   { to: '/inventory', icon: Warehouse, label: 'Inventory' },
   { to: '/orders', icon: ShoppingCart, label: 'Purchase Orders' },
@@ -35,7 +36,10 @@ export default function Sidebar() {
   const userName = user?.name || 'User';
   const userInitial = userName.charAt(0).toUpperCase();
   const showAdmin = isAdmin(user?.email);
-  const visibleNavItems = showAdmin ? [...navItems, adminNavItem] : navItems;
+  const showReception = isReception(user?.email);
+  // Client Log (client data) is reception-only; everyone else never sees it.
+  const baseNav = navItems.filter((n) => !n.receptionOnly || showReception);
+  const visibleNavItems = showAdmin ? [...baseNav, adminNavItem] : baseNav;
 
   return (
     <>
@@ -119,9 +123,11 @@ export default function Sidebar() {
           >
             {/* Logo + close button */}
             <div className="sidebar-logo">
-              <div className="logo-icon">
-                <BellRing size={24} />
-              </div>
+              <img
+                src={magmaRing}
+                alt="MAGMA"
+                style={{ width: 38, height: 38, flexShrink: 0, objectFit: 'contain' }}
+              />
               <span className="logo-text">MAGMA</span>
               <button
                 className="sidebar-close"

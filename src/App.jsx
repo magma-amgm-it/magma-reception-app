@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useAuth } from './hooks/useAuth';
+import { isReception } from './services/admin';
 import Sidebar from './components/Layout/Sidebar';
 import Dashboard from './pages/Dashboard';
 import ClientLog from './pages/ClientLog';
@@ -143,6 +145,15 @@ function LoginScreen({ onLogin, loading, error }) {
   );
 }
 
+// Client Log holds sensitive client data — only reception/admins may open it.
+// General staff who deep-link to /clients are bounced back to their dashboard.
+function ReceptionRoute({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!isReception(user?.email)) return <Navigate to="/" replace />;
+  return children;
+}
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -213,7 +224,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Routes>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/clients" element={<ClientLog />} />
+          <Route path="/clients" element={<ReceptionRoute><ClientLog /></ReceptionRoute>} />
           <Route path="/requests" element={<SupplyRequests />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/orders" element={<PurchaseOrders />} />

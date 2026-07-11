@@ -10,11 +10,25 @@ const ADMIN_EMAILS = [
   'abhishekdesai769@gmail.com',
 ];
 
+// Reception / intake staff — they manage the front desk and are the only
+// non-admins who may open the Client Log (which holds sensitive client data).
+// General staff never see it. Add teammates' emails here as they join/leave.
+const RECEPTION_EMAILS = [
+  'abhishek.desai@magma-amgm.org',
+];
+
 const normalize = (email) => (email || '').trim().toLowerCase();
 
 export function isAdmin(email) {
   if (!email) return false;
   return ADMIN_EMAILS.map(normalize).includes(normalize(email));
+}
+
+// Reception access includes admins (admins can see everything).
+export function isReception(email) {
+  if (!email) return false;
+  if (isAdmin(email)) return true;
+  return RECEPTION_EMAILS.map(normalize).includes(normalize(email));
 }
 
 export function getAdminEmails() {
