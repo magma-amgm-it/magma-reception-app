@@ -15,6 +15,11 @@ const ADMIN_EMAILS = [
 // General staff never see it. Add teammates' emails here as they join/leave.
 const RECEPTION_EMAILS = [
   'abhishek.desai@magma-amgm.org',
+  'emilie.rousseau@magma-amgm.org',
+  'jennifer.manlabao@magma-amgm.org',
+  'kenza.trabelsi@magma-amgm.org',
+  'audra.colebrooke@magma-amgm.org',
+  'nataliia.mospak@magma-amgm.org',
 ];
 
 const normalize = (email) => (email || '').trim().toLowerCase();
