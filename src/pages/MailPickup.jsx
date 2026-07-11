@@ -397,10 +397,9 @@ export default function MailPickup() {
     });
   }, [rawData]);
 
-  const pendingItems = items.filter((i) => i.status === 'Pending');
-  const historyItems = items.filter((i) => i.status !== 'Pending');
-
-  const visibleItems = activeTab === 'pending' ? pendingItems : historyItems;
+  // Mail Pickup is a simple log — reception notifies someone once and it's done.
+  // No pickup tracking; show everything, newest first.
+  const visibleItems = items;
 
   // ── Render ──
   if (loading && rawData.length === 0) {
@@ -535,106 +534,39 @@ export default function MailPickup() {
           </form>
         </motion.div>
 
-        {/* Tabs */}
-        <motion.div style={s.tabRow} variants={fadeInUp} custom={2}>
-          <button
-            style={s.tab(activeTab === 'pending')}
-            onClick={() => setActiveTab('pending')}
-          >
-            <Inbox size={14} /> Pending
-            <span style={{ ...s.badge('#ffab00'), marginLeft: 4 }}>{pendingItems.length}</span>
-          </button>
-          <button
-            style={s.tab(activeTab === 'history')}
-            onClick={() => setActiveTab('history')}
-          >
-            <CheckCircle2 size={14} /> History
-            <span style={{ ...s.badge('#8b949e'), marginLeft: 4 }}>{historyItems.length}</span>
-          </button>
+        {/* Log header */}
+        <motion.div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--text-sm)', fontWeight: 600 }} variants={fadeInUp} custom={2}>
+          <Inbox size={14} /> Mail notified
+          <span style={{ ...s.badge('#00d4ff'), marginLeft: 2 }}>{visibleItems.length}</span>
         </motion.div>
-
-        {actionError && <div style={s.error}>{actionError}</div>}
 
         {/* List */}
         <motion.div style={s.listCard} variants={fadeInUp} custom={3}>
           {visibleItems.length === 0 ? (
             <div style={s.emptyState}>
-              {activeTab === 'pending'
-                ? 'No pending pickups. Notify someone above to get started.'
-                : 'No history yet — picked-up and cancelled items will appear here.'}
+              No mail logged yet. Notify someone above to get started.
             </div>
           ) : (
-            visibleItems.map((item) => {
-              const days = daysBetween(item.dateNotified);
-              const isOld = activeTab === 'pending' && days >= 3;
-              return (
-                <motion.div
-                  key={item.id}
-                  style={s.row}
-                  whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
-                >
-                  <div style={s.avatarSmall}>{initials(item.recipientName)}</div>
-                  <div style={s.rowMain}>
-                    <div style={s.rowName}>
-                      {item.recipientName}
-                      {isOld && (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: '#ff3d5a', background: 'rgba(255,61,90,0.15)', padding: '2px 6px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                          <AlertTriangle size={10} /> {days}d waiting
-                        </span>
-                      )}
-                    </div>
-                    <div style={s.rowEmail}>{item.recipientEmail}</div>
-                    {item.description && <div style={s.rowDesc}>"{item.description}"</div>}
-                  </div>
-                  <div style={s.rowMeta}>
-                    <span style={s.badge(statusColor[item.status] || '#8b949e')}>
-                      {item.status}
-                    </span>
-                    <span style={s.rowDate}>
-                      <Clock size={10} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
-                      {formatDate(item.dateNotified)}
-                    </span>
-                  </div>
-                  <div style={s.rowActions}>
-                    {item.status === 'Pending' ? (
-                      <>
-                        <button
-                          style={s.actionBtn('#00e676')}
-                          onClick={() => handleMarkPickedUp(item)}
-                          disabled={actionLoading && actionItemId === item.id}
-                          title="Mark as picked up"
-                        >
-                          {actionLoading && actionItemId === item.id && actionType === 'pickup'
-                            ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                            : <><Check size={12} /> Picked up</>}
-                        </button>
-                        <button
-                          style={s.actionBtn('#8b949e')}
-                          onClick={() => handleCancelPickup(item)}
-                          disabled={actionLoading && actionItemId === item.id}
-                          title="Cancel notification"
-                        >
-                          {actionLoading && actionItemId === item.id && actionType === 'cancel'
-                            ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                            : <X size={12} />}
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        style={s.actionBtn('#ff3d5a')}
-                        onClick={() => handleDelete(item)}
-                        disabled={actionLoading && actionItemId === item.id}
-                        title="Delete record"
-                      >
-                        {actionLoading && actionItemId === item.id && actionType === 'delete'
-                          ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
-                          : <Trash2 size={12} />}
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              );
-            })
+            visibleItems.map((item) => (
+              <motion.div
+                key={item.id}
+                style={s.row}
+                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+              >
+                <div style={s.avatarSmall}>{initials(item.recipientName)}</div>
+                <div style={s.rowMain}>
+                  <div style={s.rowName}>{item.recipientName}</div>
+                  <div style={s.rowEmail}>{item.recipientEmail}</div>
+                  {item.description && <div style={s.rowDesc}>"{item.description}"</div>}
+                </div>
+                <div style={s.rowMeta}>
+                  <span style={s.rowDate}>
+                    <Clock size={10} style={{ display: 'inline', marginRight: 3, verticalAlign: 'middle' }} />
+                    {formatDate(item.dateNotified)}
+                  </span>
+                </div>
+              </motion.div>
+            ))
           )}
         </motion.div>
       </motion.div>

@@ -23,6 +23,10 @@ const STAGE_COLOR = {
   'Ready to Pick Up': '#00e676',
   Completed: '#8b949e',
 };
+// Display label — the SharePoint status stays "Received", but we show
+// "Request received" so staff don't think their item arrived.
+const STAGE_LABEL = { Received: 'Request received' };
+const stageLabel = (s) => STAGE_LABEL[s] || s;
 
 // ─── Helpers ───
 const lc = (v) => (v || '').toString().trim().toLowerCase();
@@ -202,7 +206,7 @@ export default function Dashboard() {
                   <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
                     <span style={{ width: 9, height: 9, borderRadius: '50%', background: c, flexShrink: 0 }} />
                     <span style={{ fontSize: 14, color: 'var(--text-primary)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, background: c + '20', color: c, whiteSpace: 'nowrap' }}>{r.status}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, background: c + '20', color: c, whiteSpace: 'nowrap' }}>{stageLabel(r.status)}</span>
                   </div>
                 );
               })}

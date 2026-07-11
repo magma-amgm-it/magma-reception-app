@@ -29,7 +29,7 @@ import { createSupplyRequest, updateSupplyRequest } from '../services/graphApi';
 
 const columns = [
   { key: 'New', label: 'New', color: '#ff3d5a' },
-  { key: 'Received', label: 'Received', color: '#ffab00' },
+  { key: 'Received', label: 'Request received', color: '#ffab00' },
   { key: 'Pending Order', label: 'Pending Order', color: '#f5c542' },
   { key: 'Ready to Pick Up', label: 'Ready to Pick Up', color: '#00e676' },
   { key: 'Completed', label: 'Completed', color: '#8b949e' },
