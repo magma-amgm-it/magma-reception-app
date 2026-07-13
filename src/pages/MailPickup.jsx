@@ -446,7 +446,6 @@ export default function MailPickup() {
             <div style={s.heroTitle}>Mail Pickup Notifications</div>
             <div style={s.heroSubtitle}>
               Notify staff when mail or packages have arrived for them at reception.
-              {user?.name && <> Sent on behalf of <strong style={{ color: '#00d4ff' }}>{user.name}</strong>.</>}
             </div>
           </div>
         </motion.div>
