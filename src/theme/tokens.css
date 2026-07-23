@@ -1,54 +1,75 @@
 /* ============================================
    MAGMA Reception App — Design Tokens
-   Framer-style dark theme
+   Editorial Calm + Navy Frame (MAGMA brand v2)
+
+   Token NAMES are unchanged from the original dark theme so every
+   existing var() reference keeps working — only the VALUES are remapped
+   from dark-glass to the light editorial MAGMA palette.
    ============================================ */
 
 :root {
-  /* ── Backgrounds ── */
-  --bg-deep: #0a0a0f;
-  --bg-navy: #0d1117;
-  --bg-card: #161b22;
-  --bg-card-hover: #21262d;
-  --bg-elevated: #1c2128;
-  --bg-surface: #13161b;
-  --bg-overlay: rgba(10, 10, 15, 0.85);
+  /* ── Brand (MAGMA v2) ── */
+  --brand-navy: #413C60;       /* frame / sidebar */
+  --brand-navy-deep: #37324F;
+  --brand-ink: #2B2740;        /* headings / primary text */
+  --brand-orange: #FEA614;     /* the one accent */
 
-  /* ── Accents ── */
-  --accent-cyan: #00d4ff;
-  --accent-magenta: #ff006e;
-  --accent-green: #00e676;
-  --accent-amber: #ffab00;
-  --accent-red: #ff3d5a;
-  --accent-purple: #a855f7;
+  /* Service palette (the ring's segments) */
+  --svc-lime: #BFD330;
+  --svc-teal: #31D3AE;
+  --svc-sky: #39C0E0;
+  --svc-lavender: #7C76B8;
+  --svc-coral: #E06B7A;
+  --svc-orange: #FEA614;
 
-  /* Accent with alpha (for glows / overlays) */
-  --accent-cyan-10: rgba(0, 212, 255, 0.1);
-  --accent-cyan-20: rgba(0, 212, 255, 0.2);
-  --accent-cyan-40: rgba(0, 212, 255, 0.4);
-  --accent-magenta-10: rgba(255, 0, 110, 0.1);
-  --accent-magenta-20: rgba(255, 0, 110, 0.2);
-  --accent-green-10: rgba(0, 230, 118, 0.1);
-  --accent-green-20: rgba(0, 230, 118, 0.2);
-  --accent-amber-10: rgba(255, 171, 0, 0.1);
-  --accent-red-10: rgba(255, 61, 90, 0.1);
+  /* ── Backgrounds (light) ── */
+  --bg-deep: #FFFFFF;
+  --bg-navy: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F7F7F9;
+  --bg-elevated: #FFFFFF;
+  --bg-surface: #FCFCFB;
+  --bg-overlay: rgba(255, 255, 255, 0.85);
 
-  /* ── Text ── */
-  --text-primary: #e6edf3;
-  --text-muted: #8b949e;
-  --text-dim: #484f58;
-  --text-inverse: #0a0a0f;
+  /* ── Accents (remapped to MAGMA) ──
+     --accent-cyan is the app's PRIMARY accent (links, active nav, focus,
+     primary buttons) — now MAGMA orange. */
+  --accent-cyan: #FEA614;
+  --accent-magenta: #E06B7A;
+  --accent-green: #31D3AE;
+  --accent-amber: #FEA614;
+  --accent-red: #E06B7A;
+  --accent-purple: #7C76B8;
 
-  /* ── Borders ── */
-  --border-default: rgba(255, 255, 255, 0.06);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --border-accent: rgba(0, 212, 255, 0.25);
+  /* Accent with alpha (tints for chips / hovers) */
+  --accent-cyan-10: rgba(254, 166, 20, 0.10);
+  --accent-cyan-20: rgba(254, 166, 20, 0.20);
+  --accent-cyan-40: rgba(254, 166, 20, 0.35);
+  --accent-magenta-10: rgba(241, 98, 120, 0.10);
+  --accent-magenta-20: rgba(241, 98, 120, 0.20);
+  --accent-green-10: rgba(87, 193, 165, 0.12);
+  --accent-green-20: rgba(87, 193, 165, 0.20);
+  --accent-amber-10: rgba(254, 166, 20, 0.12);
+  --accent-red-10: rgba(241, 98, 120, 0.10);
 
-  /* ── Glassmorphism ── */
-  --glass-bg: rgba(22, 27, 34, 0.6);
-  --glass-bg-heavy: rgba(22, 27, 34, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-blur: 16px;
-  --glass-blur-heavy: 24px;
+  /* ── Text (ink on white) ── */
+  --text-primary: #2B2740;
+  --text-muted: #525366;
+  --text-dim: #9AA0A6;
+  --text-inverse: #FFFFFF;
+
+  /* ── Borders (hairlines) ── */
+  --border-default: #E4E4E8;
+  --border-subtle: #EEEEF0;
+  --border-accent: rgba(254, 166, 20, 0.35);
+
+  /* ── Surfaces (formerly glassmorphism) ──
+     Kept the names; now light + crisp instead of dark + blurred. */
+  --glass-bg: rgba(255, 255, 255, 0.90);
+  --glass-bg-heavy: #FFFFFF;
+  --glass-border: #E4E4E8;
+  --glass-blur: 10px;
+  --glass-blur-heavy: 14px;
 
   /* ── Spacing scale (4px base) ── */
   --space-1: 4px;
@@ -64,36 +85,37 @@
 
   /* ── Border radius ── */
   --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
   --radius-full: 9999px;
 
-  /* ── Shadows ── */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.6);
-  --shadow-xl: 0 16px 50px rgba(0, 0, 0, 0.7);
+  /* ── Shadows (soft, navy-tinted, barely-there) ── */
+  --shadow-sm: 0 1px 2px rgba(40, 39, 64, 0.05);
+  --shadow-md: 0 2px 10px rgba(40, 39, 64, 0.06);
+  --shadow-lg: 0 8px 28px rgba(40, 39, 64, 0.08);
+  --shadow-xl: 0 16px 48px rgba(40, 39, 64, 0.10);
 
-  /* ── Glow effects ── */
-  --glow-cyan: 0 0 20px rgba(0, 212, 255, 0.3), 0 0 60px rgba(0, 212, 255, 0.1);
-  --glow-magenta: 0 0 20px rgba(255, 0, 110, 0.3), 0 0 60px rgba(255, 0, 110, 0.1);
-  --glow-green: 0 0 20px rgba(0, 230, 118, 0.3), 0 0 60px rgba(0, 230, 118, 0.1);
-  --glow-amber: 0 0 20px rgba(255, 171, 0, 0.3), 0 0 60px rgba(255, 171, 0, 0.1);
-  --glow-sm-cyan: 0 0 8px rgba(0, 212, 255, 0.25);
+  /* ── Glow effects (removed — editorial calm has none) ── */
+  --glow-cyan: none;
+  --glow-magenta: none;
+  --glow-green: none;
+  --glow-amber: none;
+  --glow-sm-cyan: none;
 
   /* ── Typography ── */
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-sans: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-head: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, Consolas, monospace;
 
   --text-xs: 0.75rem;    /* 12px */
   --text-sm: 0.8125rem;  /* 13px */
-  --text-base: 0.875rem; /* 14px */
+  --text-base: 0.9375rem;/* 15px */
   --text-md: 1rem;       /* 16px */
   --text-lg: 1.125rem;   /* 18px */
-  --text-xl: 1.25rem;    /* 20px */
-  --text-2xl: 1.5rem;    /* 24px */
-  --text-3xl: 1.875rem;  /* 30px */
+  --text-xl: 1.375rem;   /* 22px */
+  --text-2xl: 1.625rem;  /* 26px */
+  --text-3xl: 2rem;      /* 32px */
 
   --weight-normal: 400;
   --weight-medium: 500;

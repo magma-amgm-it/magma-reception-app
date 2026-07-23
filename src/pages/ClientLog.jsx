@@ -49,25 +49,25 @@ const FALLBACK_LANGUAGES = ['English', 'French'];
 
 // Predefined colors for known status codes — keeps the original look
 const STATUS_COLOR_MAP = {
-  PR: '#00d4ff',
-  WP: '#00e676',
-  SP: '#a855f7',
-  VV: '#ffab00',
-  AS: '#ff006e',
-  Refugee: '#26a69a',
+  PR: '#39C0E0',
+  WP: '#31D3AE',
+  SP: '#7C76B8',
+  VV: '#FEA614',
+  AS: '#E06B7A',
+  Refugee: '#BFD330',
 };
 
 // Palette for any new statuses (Citizen, etc.) — picked deterministically by name
 // so the same status always gets the same color across reloads.
 const STATUS_FALLBACK_COLORS = [
-  '#3b82f6', // blue
-  '#f59e0b', // amber
-  '#10b981', // green
-  '#ef4444', // red
-  '#8b5cf6', // violet
-  '#06b6d4', // cyan
-  '#84cc16', // lime
-  '#f97316', // orange
+  '#413C60', // navy
+  '#31D3AE', // teal
+  '#39C0E0', // sky
+  '#7C76B8', // lavender
+  '#E06B7A', // coral
+  '#FEA614', // orange
+  '#BFD330', // lime
+  '#525366', // muted
 ];
 
 function colorForStatus(label) {
@@ -107,15 +107,15 @@ const s = {
   badge: {
     padding: '4px 14px',
     borderRadius: 'var(--radius-full)',
-    background: 'rgba(0,212,255,0.15)',
-    color: '#00d4ff',
+    background: 'rgba(64,58,96,0.10)',
+    color: 'var(--brand-ink)',
     fontSize: 'var(--text-sm)',
     fontWeight: 600,
   },
   formCard: {
-    background: 'var(--glass-bg)',
-    backdropFilter: 'blur(var(--glass-blur))',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-8)',
     marginBottom: 'var(--space-8)',
@@ -137,19 +137,20 @@ const s = {
     width: '100%',
     padding: 'var(--space-3) var(--space-4)',
     borderRadius: 'var(--radius-md)',
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border-default)',
     color: 'var(--text-primary)',
     fontSize: 'var(--text-md)',
     minHeight: 48,
     outline: 'none',
+    colorScheme: 'light',
     transition: 'border-color 0.2s',
   },
   sectionLabel: {
     fontSize: 'var(--text-md)',
     fontWeight: 600,
     marginBottom: 'var(--space-3)',
-    color: 'var(--text-primary)',
+    color: 'var(--brand-ink)',
   },
   optionGrid: {
     display: 'flex',
@@ -160,9 +161,9 @@ const s = {
   optionBtn: (selected) => ({
     padding: 'var(--space-3) var(--space-5)',
     borderRadius: 'var(--radius-md)',
-    background: selected ? 'rgba(0,212,255,0.18)' : 'rgba(255,255,255,0.04)',
-    border: selected ? '1px solid rgba(0,212,255,0.5)' : '1px solid var(--glass-border)',
-    color: selected ? '#00d4ff' : 'var(--text-muted)',
+    background: selected ? 'var(--brand-navy)' : 'var(--bg-surface)',
+    border: selected ? '1px solid var(--brand-navy)' : '1px solid var(--border-default)',
+    color: selected ? '#fff' : 'var(--text-muted)',
     fontWeight: 500,
     fontSize: 'var(--text-sm)',
     cursor: 'pointer',
@@ -173,9 +174,9 @@ const s = {
   statusBtn: (selected, color) => ({
     padding: 'var(--space-3) var(--space-5)',
     borderRadius: 'var(--radius-md)',
-    background: selected ? color + '22' : 'rgba(255,255,255,0.04)',
-    border: selected ? `1px solid ${color}60` : '1px solid var(--glass-border)',
-    color: selected ? color : 'var(--text-muted)',
+    background: selected ? color + '22' : 'var(--bg-surface)',
+    border: selected ? `1px solid ${color}` : '1px solid var(--border-default)',
+    color: selected ? 'var(--brand-ink)' : 'var(--text-muted)',
     fontWeight: 600,
     fontSize: 'var(--text-md)',
     cursor: 'pointer',
@@ -192,9 +193,9 @@ const s = {
     flex: 1,
     padding: 'var(--space-3)',
     borderRadius: 'var(--radius-md)',
-    background: active ? 'rgba(0,212,255,0.18)' : 'rgba(255,255,255,0.04)',
-    border: active ? '1px solid rgba(0,212,255,0.5)' : '1px solid var(--glass-border)',
-    color: active ? '#00d4ff' : 'var(--text-muted)',
+    background: active ? 'var(--brand-navy)' : 'var(--bg-surface)',
+    border: active ? '1px solid var(--brand-navy)' : '1px solid var(--border-default)',
+    color: active ? '#fff' : 'var(--text-muted)',
     fontWeight: 600,
     fontSize: 'var(--text-md)',
     cursor: 'pointer',
@@ -210,18 +211,19 @@ const s = {
     width: 48,
     height: 48,
     borderRadius: 'var(--radius-md)',
-    background: 'rgba(255,255,255,0.06)',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border-default)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     cursor: 'pointer',
-    color: 'var(--text-primary)',
+    color: 'var(--brand-ink)',
   },
   stepperNum: {
     fontSize: '2rem',
     fontWeight: 700,
-    color: '#00d4ff',
+    fontFamily: 'var(--font-head)',
+    color: 'var(--brand-ink)',
     minWidth: 48,
     textAlign: 'center',
   },
@@ -234,9 +236,9 @@ const s = {
   interactionBtn: (selected) => ({
     padding: 'var(--space-3) var(--space-4)',
     borderRadius: 'var(--radius-md)',
-    background: selected ? 'rgba(0,230,118,0.15)' : 'rgba(255,255,255,0.04)',
-    border: selected ? '1px solid rgba(0,230,118,0.4)' : '1px solid var(--glass-border)',
-    color: selected ? '#00e676' : 'var(--text-muted)',
+    background: selected ? 'rgba(87,193,165,0.15)' : 'var(--bg-surface)',
+    border: selected ? '1px solid #31D3AE' : '1px solid var(--border-default)',
+    color: selected ? 'var(--brand-ink)' : 'var(--text-muted)',
     fontWeight: 600,
     fontSize: 'var(--text-md)',
     cursor: 'pointer',
@@ -258,13 +260,14 @@ const s = {
     padding: 'var(--space-4)',
     borderRadius: 'var(--radius-md)',
     background: loading
-      ? 'rgba(0,212,255,0.1)'
+      ? '#8681A5'
       : success
-      ? 'rgba(0,230,118,0.2)'
-      : 'linear-gradient(135deg, #00d4ff 0%, #0090b3 100%)',
+      ? 'rgba(87,193,165,0.2)'
+      : 'var(--brand-navy)',
     border: 'none',
-    color: loading ? '#00d4ff' : success ? '#00e676' : '#0a0a0f',
-    fontWeight: 700,
+    color: loading ? '#fff' : success ? '#3E9E85' : '#fff',
+    fontFamily: 'var(--font-head)',
+    fontWeight: 600,
     fontSize: 'var(--text-lg)',
     cursor: loading ? 'not-allowed' : 'pointer',
     minHeight: 56,
@@ -275,9 +278,9 @@ const s = {
     marginTop: 'var(--space-4)',
   }),
   entriesCard: {
-    background: 'var(--glass-bg)',
-    backdropFilter: 'blur(var(--glass-blur))',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-6)',
   },
@@ -286,7 +289,7 @@ const s = {
     alignItems: 'center',
     gap: 'var(--space-4)',
     padding: 'var(--space-3) var(--space-4)',
-    borderBottom: '1px solid var(--border-default)',
+    borderBottom: '1px solid var(--border-subtle)',
   },
   entryName: {
     fontWeight: 600,
@@ -299,10 +302,10 @@ const s = {
   entryBadge: (color) => ({
     padding: '2px 10px',
     borderRadius: 'var(--radius-full)',
-    background: color + '20',
-    color,
+    background: color,
+    color: '#fff',
     fontSize: 'var(--text-xs)',
-    fontWeight: 600,
+    fontWeight: 700,
   }),
   entryTime: {
     color: 'var(--text-dim)',
@@ -312,7 +315,7 @@ const s = {
 };
 
 function getStatusColor(status) {
-  if (!status || status === '—') return '#8b949e';
+  if (!status || status === '—') return '#9AA0A6';
   return colorForStatus(status);
 }
 
@@ -380,9 +383,9 @@ function getDateRange(preset, monthYear) {
 // ─── Filter + stats styles ───
 const f = {
   filterCard: {
-    background: 'var(--glass-bg)',
-    backdropFilter: 'blur(var(--glass-blur))',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-5)',
     marginBottom: 'var(--space-5)',
@@ -411,9 +414,9 @@ const f = {
     fontWeight: 600,
     cursor: 'pointer',
     border: '1px solid',
-    borderColor: active ? '#00d4ff' : 'var(--glass-border)',
-    background: active ? 'rgba(0,212,255,0.15)' : 'transparent',
-    color: active ? '#00d4ff' : 'var(--text-muted)',
+    borderColor: active ? 'var(--brand-navy)' : 'var(--border-default)',
+    background: active ? 'var(--brand-navy)' : 'var(--bg-card)',
+    color: active ? '#fff' : 'var(--text-muted)',
     transition: 'all 0.15s',
   }),
   monthInput: {
@@ -421,17 +424,18 @@ const f = {
     borderRadius: 999,
     fontSize: 12,
     fontWeight: 600,
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-surface)',
+    border: '1px solid var(--border-default)',
     color: 'var(--text-primary)',
     outline: 'none',
-    colorScheme: 'dark',
+    colorScheme: 'light',
     minWidth: 140,
     cursor: 'pointer',
   },
   statsCard: {
-    background: 'linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(168,85,247,0.06) 100%)',
-    border: '1px solid rgba(0,212,255,0.2)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-6)',
     marginBottom: 'var(--space-5)',
@@ -446,13 +450,14 @@ const f = {
     display: 'flex',
     flexDirection: 'column',
     gap: 4,
-    borderRight: '1px solid rgba(255,255,255,0.08)',
+    borderRight: '1px solid var(--border-default)',
     paddingRight: 'var(--space-6)',
   },
   statsCountNum: {
     fontSize: '3rem',
     fontWeight: 800,
-    color: '#00d4ff',
+    fontFamily: 'var(--font-head)',
+    color: 'var(--brand-ink)',
     lineHeight: 1,
   },
   statsCountLabel: {
@@ -495,8 +500,8 @@ const f = {
   breakdownEmpty: { fontSize: 11, color: 'var(--text-dim)', fontStyle: 'italic' },
 };
 
-const reasonColors = ['#00d4ff', '#a855f7', '#ff006e', '#00e676', '#ffab00', '#26a69a'];
-const langColors = { English: '#00d4ff', French: '#ff006e' };
+const reasonColors = ['#39C0E0', '#7C76B8', '#E06B7A', '#31D3AE', '#FEA614', '#BFD330'];
+const langColors = { English: '#39C0E0', French: '#E06B7A' };
 
 export default function ClientLog() {
   const [firstName, setFirstName] = useState('');
@@ -867,7 +872,7 @@ export default function ClientLog() {
               <label style={s.label}>Date & Time of Visit</label>
               <button
                 type="button"
-                style={{ background: 'none', border: 'none', color: '#00d4ff', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0 }}
+                style={{ background: 'none', border: 'none', color: 'var(--brand-navy)', fontSize: 11, fontWeight: 600, cursor: 'pointer', padding: 0 }}
                 onClick={() => setDateOfInteraction(toLocalDatetimeInput(new Date().toISOString()))}
                 title="Set to current time"
               >
@@ -898,7 +903,7 @@ export default function ClientLog() {
             </select>
             {!showAddReason && (
               <button type="button"
-                style={{ padding: '0 14px', borderRadius: 'var(--radius-md)', border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 }}
+                style={{ padding: '0 14px', borderRadius: 'var(--radius-md)', border: '1px dashed #FEA61480', background: 'transparent', color: '#D98200', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 }}
                 onClick={() => { setShowAddReason(true); setAddReasonError(null); setNewReasonName(''); }}>
                 <Plus size={12} /> New
               </button>
@@ -916,7 +921,7 @@ export default function ClientLog() {
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewReason(); } }}
               />
               <button type="button"
-                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingReason ? 'not-allowed' : 'pointer', minHeight: 40 }}
+                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingReason ? 'not-allowed' : 'pointer', minHeight: 40 }}
                 onClick={handleAddNewReason} disabled={addingReason}>
                 {addingReason ? <Loader2 size={12} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> : <Check size={12} />}
               </button>
@@ -928,7 +933,7 @@ export default function ClientLog() {
             </div>
           )}
           {addReasonError && showAddReason && (
-            <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addReasonError}</div>
+            <div style={{ color: '#E05563', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addReasonError}</div>
           )}
 
           {/* Status in Canada */}
@@ -945,7 +950,7 @@ export default function ClientLog() {
                   whileTap={{ scale: 0.95 }}
                   animate={
                     statusCanada === label
-                      ? { boxShadow: `0 0 12px ${color}40` }
+                      ? { boxShadow: 'var(--shadow-sm)' }
                       : { boxShadow: 'none' }
                   }
                 >
@@ -955,7 +960,7 @@ export default function ClientLog() {
             })}
             {!showAddStatus && (
               <button type="button"
-                style={{ padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, minHeight: 48 }}
+                style={{ padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', border: '1px dashed #FEA61480', background: 'transparent', color: '#D98200', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, minHeight: 48 }}
                 onClick={() => { setShowAddStatus(true); setAddStatusError(null); setNewStatusName(''); }}>
                 <Plus size={12} /> New
               </button>
@@ -973,7 +978,7 @@ export default function ClientLog() {
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewStatus(); } }}
               />
               <button type="button"
-                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingStatus ? 'not-allowed' : 'pointer', minHeight: 40 }}
+                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingStatus ? 'not-allowed' : 'pointer', minHeight: 40 }}
                 onClick={handleAddNewStatus} disabled={addingStatus}>
                 {addingStatus ? <Loader2 size={12} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> : <Check size={12} />}
               </button>
@@ -985,7 +990,7 @@ export default function ClientLog() {
             </div>
           )}
           {addStatusError && showAddStatus && (
-            <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addStatusError}</div>
+            <div style={{ color: '#E05563', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addStatusError}</div>
           )}
           {!showAddStatus && <div style={{ marginBottom: 'var(--space-4)' }} />}
 
@@ -1001,7 +1006,7 @@ export default function ClientLog() {
             </select>
             {!showAddLanguage && (
               <button type="button"
-                style={{ padding: '0 14px', borderRadius: 'var(--radius-md)', border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 }}
+                style={{ padding: '0 14px', borderRadius: 'var(--radius-md)', border: '1px dashed #FEA61480', background: 'transparent', color: '#D98200', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 }}
                 onClick={() => { setShowAddLanguage(true); setAddLanguageError(null); setNewLanguageName(''); }}>
                 <Plus size={12} /> New
               </button>
@@ -1019,7 +1024,7 @@ export default function ClientLog() {
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewLanguage(); } }}
               />
               <button type="button"
-                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingLanguage ? 'not-allowed' : 'pointer', minHeight: 40 }}
+                style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingLanguage ? 'not-allowed' : 'pointer', minHeight: 40 }}
                 onClick={handleAddNewLanguage} disabled={addingLanguage}>
                 {addingLanguage ? <Loader2 size={12} style={{ animation: 'clientlog-spin 1s linear infinite' }} /> : <Check size={12} />}
               </button>
@@ -1031,7 +1036,7 @@ export default function ClientLog() {
             </div>
           )}
           {addLanguageError && showAddLanguage && (
-            <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addLanguageError}</div>
+            <div style={{ color: '#E05563', fontSize: 12, marginTop: -12, marginBottom: 'var(--space-4)' }}>{addLanguageError}</div>
           )}
 
           {/* Family Members */}
@@ -1065,7 +1070,7 @@ export default function ClientLog() {
                 whileTap={{ scale: 0.95 }}
                 animate={
                   interaction === type
-                    ? { boxShadow: '0 0 12px rgba(0,230,118,0.3)' }
+                    ? { boxShadow: 'var(--shadow-sm)' }
                     : { boxShadow: 'none' }
                 }
               >
@@ -1123,7 +1128,7 @@ export default function ClientLog() {
 
           {/* Submit Error */}
           {submitError && (
-            <div style={{ color: '#ff3d5a', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)', textAlign: 'center' }}>
+            <div style={{ color: '#E05563', fontSize: 'var(--text-sm)', marginTop: 'var(--space-2)', textAlign: 'center' }}>
               {submitError}
             </div>
           )}
@@ -1135,7 +1140,7 @@ export default function ClientLog() {
             disabled={submitting || !firstName || !lastName}
             whileHover={
               !submitting && !success
-                ? { scale: 1.02, boxShadow: '0 0 30px rgba(0,212,255,0.4)' }
+                ? { scale: 1.02, boxShadow: 'var(--shadow-md)' }
                 : {}
             }
             whileTap={!submitting ? { scale: 0.98 } : {}}
@@ -1269,7 +1274,7 @@ export default function ClientLog() {
               gap: 10,
             }}
           >
-            <BarChart3 size={18} style={{ color: '#00d4ff' }} />
+            <BarChart3 size={18} style={{ color: '#413C60' }} />
             Entries — {activeFilterLabel}
             <span style={{ fontSize: 13, color: 'var(--text-dim)', fontWeight: 400, marginLeft: 6 }}>
               ({filteredEntries.length})
@@ -1282,7 +1287,7 @@ export default function ClientLog() {
             <Loader2 size={24} style={{ animation: 'clientlog-spin 1s linear infinite' }} />
           </div>
         ) : error && rawData.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: '#ff3d5a' }}>
+          <div style={{ textAlign: 'center', padding: 'var(--space-8)', color: '#E05563' }}>
             <AlertCircle size={24} />
             <p style={{ marginTop: 8 }}>Failed to load entries</p>
             <button style={{ ...s.input, maxWidth: 120, cursor: 'pointer', marginTop: 8, textAlign: 'center' }} onClick={refresh}>
@@ -1304,7 +1309,7 @@ export default function ClientLog() {
                 style={{ ...s.entryItem, cursor: 'pointer' }}
                 variants={fadeInUp}
                 custom={3 + i}
-                whileHover={{ backgroundColor: 'rgba(0,212,255,0.06)' }}
+                whileHover={{ backgroundColor: 'rgba(64,58,96,0.04)' }}
                 onClick={() => handleOpenEditEntry(entry)}
                 title="Click to edit"
               >
@@ -1352,7 +1357,7 @@ export default function ClientLog() {
               </button>
 
               <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 }}>
-                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#00d4ff' }} />
+                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#FEA614' }} />
                 Edit Client Visit
               </div>
               <div style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 }}>
@@ -1447,12 +1452,12 @@ export default function ClientLog() {
                 </div>
 
                 {editSaveError && (
-                  <div style={{ color: '#ff3d5a', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>{editSaveError}</div>
+                  <div style={{ color: '#E05563', fontSize: 13, marginBottom: 12, textAlign: 'center' }}>{editSaveError}</div>
                 )}
 
                 <motion.button
                   type="submit"
-                  style={{ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: savingEdit ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: editSaveSuccess ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: editSaveSuccess ? '#00e676' : '#061218' }}
+                  style={{ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 15, cursor: savingEdit ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: editSaveSuccess ? 'rgba(87,193,165,0.2)' : 'var(--brand-navy)', color: editSaveSuccess ? '#3E9E85' : '#fff' }}
                   disabled={savingEdit || deletingEntry}
                   whileHover={!savingEdit ? { scale: 1.02 } : {}}
                   whileTap={!savingEdit ? { scale: 0.98 } : {}}
@@ -1467,15 +1472,15 @@ export default function ClientLog() {
                   {!showDeleteConfirm ? (
                     <button
                       type="button"
-                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', color: '#ff3d5a', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(224,85,99,0.3)', background: 'rgba(224,85,99,0.08)', color: '#E05563', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                       onClick={() => setShowDeleteConfirm(true)}
                       disabled={savingEdit}
                     >
                       <Trash2 size={14} /> Delete This Entry
                     </button>
                   ) : (
-                    <div style={{ background: 'rgba(255,61,90,0.08)', border: '1px solid rgba(255,61,90,0.3)', borderRadius: 10, padding: 14 }}>
-                      <div style={{ color: '#ff3d5a', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ background: 'rgba(224,85,99,0.08)', border: '1px solid rgba(224,85,99,0.3)', borderRadius: 10, padding: 14 }}>
+                      <div style={{ color: '#E05563', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <AlertTriangle size={14} /> This cannot be undone
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
@@ -1499,7 +1504,7 @@ export default function ClientLog() {
                         </button>
                         <button
                           type="button"
-                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#ff3d5a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deletingEntry ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#E05563', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deletingEntry ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                           onClick={handleDeleteEntry}
                           disabled={deletingEntry || deleteConfirmText.trim().toLowerCase() !== editingEntry.name.trim().toLowerCase()}
                         >

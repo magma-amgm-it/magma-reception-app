@@ -17,11 +17,11 @@ import { useAuth } from '../hooks/useAuth';
 
 // ─── Stage colors (match Supply Requests board) ───
 const STAGE_COLOR = {
-  New: '#ff3d5a',
-  Received: '#ffab00',
-  'Pending Order': '#f5c542',
-  'Ready to Pick Up': '#00e676',
-  Completed: '#8b949e',
+  New: '#E06B7A',
+  Received: '#FEA614',
+  'Pending Order': '#39C0E0',
+  'Ready to Pick Up': '#31D3AE',
+  Completed: '#8792A0',
 };
 // Display label — the SharePoint status stays "Received", but we show
 // "Request received" so staff don't think their item arrived.
@@ -83,7 +83,7 @@ function CountUp({ value, color }) {
     return () => cancelAnimationFrame(raf);
   }, [value]);
   return (
-    <div style={{ fontSize: 32, fontWeight: 800, color, lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+    <div style={{ fontFamily: 'var(--font-head)', fontSize: 34, fontWeight: 700, color: 'var(--brand-ink)', lineHeight: 1, letterSpacing: '-0.5px', fontVariantNumeric: 'tabular-nums' }}>
       {n}
     </div>
   );
@@ -97,10 +97,10 @@ function StatCard({ icon: Icon, label, value, sublabel, color, delay = 0 }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        background: 'var(--glass-bg)',
-        backdropFilter: 'blur(var(--glass-blur))',
-        border: '1px solid var(--glass-border)',
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-default)',
         borderRadius: 'var(--radius-lg)',
+        boxShadow: 'var(--shadow-sm)',
         padding: 20,
         display: 'flex',
         flexDirection: 'column',
@@ -108,11 +108,11 @@ function StatCard({ icon: Icon, label, value, sublabel, color, delay = 0 }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.6, display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Icon size={14} /> {label}
+        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.6, display: 'flex', alignItems: 'center', gap: 8 }}>
+          {label}
         </span>
-        <span style={{ width: 34, height: 34, borderRadius: 10, background: color + '1f', color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Icon size={18} />
+        <span style={{ width: 38, height: 38, borderRadius: 12, background: color, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Icon size={19} />
         </span>
       </div>
       <CountUp value={value} color={color} />
@@ -175,20 +175,20 @@ export default function Dashboard() {
 
       {/* Stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
-        <StatCard icon={PackageSearch} label="My open requests" value={me.open.length} sublabel="In progress right now" color="#00d4ff" delay={0} />
-        <StatCard icon={CheckCircle2} label="Ready to pick up" value={me.ready.length} sublabel="Waiting at reception for you" color="#00e676" delay={0.05} />
-        <StatCard icon={Mail} label="Mail waiting" value={me.myMail.length} sublabel="Packages & letters for you" color="#a855f7" delay={0.1} />
-        <StatCard icon={Sparkles} label="Completed this month" value={me.completedThisMonth.length} sublabel="Requests fulfilled for you" color="#ffab00" delay={0.15} />
+        <StatCard icon={PackageSearch} label="My open requests" value={me.open.length} sublabel="In progress right now" color="#FEA614" delay={0} />
+        <StatCard icon={CheckCircle2} label="Ready to pick up" value={me.ready.length} sublabel="Waiting at reception for you" color="#31D3AE" delay={0.05} />
+        <StatCard icon={Mail} label="Mail waiting" value={me.myMail.length} sublabel="Packages & letters for you" color="#39C0E0" delay={0.1} />
+        <StatCard icon={Sparkles} label="Completed this month" value={me.completedThisMonth.length} sublabel="Requests fulfilled for you" color="#BFD330" delay={0.15} />
       </div>
 
       {/* Body: your requests + your mail */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 16 }}>
         {/* Your requests */}
-        <div style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 18px', borderBottom: '1px solid var(--border-default)' }}>
-            <PackageSearch size={18} color="#00d4ff" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Your requests</h3>
-            <button onClick={() => navigate('/requests')} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#00d4ff', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <PackageSearch size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Your requests</h3>
+            <button onClick={() => navigate('/requests')} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: 'var(--brand-orange)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
               View all <ArrowRight size={13} />
             </button>
           </div>
@@ -205,8 +205,8 @@ export default function Dashboard() {
                 return (
                   <div key={r.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
                     <span style={{ width: 9, height: 9, borderRadius: '50%', background: c, flexShrink: 0 }} />
-                    <span style={{ fontSize: 14, color: 'var(--text-primary)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, background: c + '20', color: c, whiteSpace: 'nowrap' }}>{stageLabel(r.status)}</span>
+                    <span style={{ fontSize: 14, color: 'var(--brand-ink)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.title}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 11px', borderRadius: 999, background: c, color: '#fff', whiteSpace: 'nowrap' }}>{stageLabel(r.status)}</span>
                   </div>
                 );
               })}
@@ -215,11 +215,11 @@ export default function Dashboard() {
         </div>
 
         {/* Your mail */}
-        <div style={{ background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '16px 18px', borderBottom: '1px solid var(--border-default)' }}>
-            <Inbox size={18} color="#a855f7" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--text-primary)' }}>Your mail</h3>
-            <button onClick={() => navigate('/mail')} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: '#a855f7', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <Inbox size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Your mail</h3>
+            <button onClick={() => navigate('/mail')} style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 600, color: 'var(--brand-orange)', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}>
               View all <ArrowRight size={13} />
             </button>
           </div>
@@ -233,14 +233,14 @@ export default function Dashboard() {
             <div style={{ padding: '6px 0' }}>
               {me.myMail.slice(0, 6).map((m) => (
                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 18px', borderBottom: '1px solid var(--border-subtle)' }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(38,198,218,0.12)', color: '#26c6da', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <span style={{ width: 34, height: 34, borderRadius: 9, background: '#39C0E0', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Mail size={16} />
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.desc}</div>
+                    <div style={{ fontSize: 14, color: 'var(--brand-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.desc}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-dim)' }}>{m.date ? format(m.date, 'MMM d, h:mm a') : '—'}</div>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 999, background: 'rgba(38,198,218,0.16)', color: '#26c6da', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 11px', borderRadius: 999, background: '#31D3AE', color: '#fff', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 5 }}>
                     <Clock size={11} /> Waiting
                   </span>
                 </div>

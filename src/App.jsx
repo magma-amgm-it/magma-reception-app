@@ -13,18 +13,22 @@ import MailPickup from './pages/MailPickup';
 import Admin from './pages/Admin';
 import FeedbackWidget from './components/FeedbackWidget';
 import { msalInstance, loginRequest, initializeMsal, getAccessToken } from './services/auth';
-import { BellRing, LogIn, Shield, Loader2 } from 'lucide-react';
+import { LogIn, Shield, Loader2 } from 'lucide-react';
+import magmaLogo from './assets/magma-logo.png';
 
 function LoginScreen({ onLogin, loading, error }) {
   return (
     <div style={{
-      height: '100vh',
+      flex: 1,
+      width: '100%',
+      minHeight: '100vh',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      background: 'linear-gradient(135deg, #0a0a0f 0%, #0d1117 50%, #0a0a1a 100%)',
+      background: '#FCFCFB',
       flexDirection: 'column',
-      gap: 32,
+      gap: 24,
+      fontFamily: "'Open Sans', sans-serif",
     }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -34,56 +38,33 @@ function LoginScreen({ onLogin, loading, error }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: 24,
-          padding: 48,
-          borderRadius: 24,
-          background: 'rgba(22, 27, 34, 0.8)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.06)',
+          gap: 22,
+          padding: '44px 48px',
+          borderRadius: 16,
+          background: '#FFFFFF',
+          border: '1px solid #E4E4E8',
+          boxShadow: '0 8px 28px rgba(40, 39, 64, 0.08)',
           maxWidth: 420,
           width: '90%',
         }}
       >
-        <div style={{
-          width: 72,
-          height: 72,
-          borderRadius: 20,
-          background: 'linear-gradient(135deg, rgba(0,212,255,0.15), rgba(255,0,110,0.15))',
-          border: '1px solid rgba(0,212,255,0.3)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}>
-          <BellRing size={36} color="#00d4ff" />
-        </div>
+        <img src={magmaLogo} alt="MAGMA AMGM" style={{ width: '100%', maxWidth: 260, height: 'auto', objectFit: 'contain' }} />
 
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{
-            fontSize: 28,
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #00d4ff, #ff006e)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            marginBottom: 8,
-          }}>
-            MAGMA Reception
-          </h1>
-          <p style={{ color: '#8b949e', fontSize: 14 }}>
-            Operations Center
-          </p>
-        </div>
+        <p style={{ color: '#9AA0A6', fontSize: 13, letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600, marginTop: -4 }}>
+          Reception Operations Center
+        </p>
 
         <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          padding: '8px 16px',
+          padding: '9px 16px',
           borderRadius: 8,
-          background: 'rgba(0,212,255,0.05)',
-          border: '1px solid rgba(0,212,255,0.1)',
+          background: '#F9F9F9',
+          border: '1px solid #EEEEF0',
         }}>
-          <Shield size={14} color="#00d4ff" />
-          <span style={{ color: '#8b949e', fontSize: 12 }}>
+          <Shield size={14} color="#FEA614" />
+          <span style={{ color: '#525366', fontSize: 12.5 }}>
             Sign in with your MAGMA Microsoft account
           </span>
         </div>
@@ -92,9 +73,9 @@ function LoginScreen({ onLogin, loading, error }) {
           <div style={{
             padding: '10px 16px',
             borderRadius: 8,
-            background: 'rgba(255,61,90,0.1)',
-            border: '1px solid rgba(255,61,90,0.2)',
-            color: '#ff3d5a',
+            background: 'rgba(241,98,120,0.1)',
+            border: '1px solid rgba(241,98,120,0.25)',
+            color: '#D8455A',
             fontSize: 13,
             width: '100%',
             textAlign: 'center',
@@ -111,11 +92,12 @@ function LoginScreen({ onLogin, loading, error }) {
           style={{
             width: '100%',
             padding: '14px 24px',
-            borderRadius: 12,
-            background: loading ? 'rgba(0,212,255,0.1)' : 'linear-gradient(135deg, #00d4ff, #0099cc)',
+            borderRadius: 10,
+            background: loading ? '#6B6690' : '#413C60',
             border: 'none',
             color: '#fff',
-            fontSize: 16,
+            fontFamily: "'Poppins', sans-serif",
+            fontSize: 15,
             fontWeight: 600,
             cursor: loading ? 'wait' : 'pointer',
             display: 'flex',
@@ -138,8 +120,8 @@ function LoginScreen({ onLogin, loading, error }) {
         </motion.button>
       </motion.div>
 
-      <p style={{ color: '#484f58', fontSize: 11 }}>
-        MAGMA Settlement & Community Services
+      <p style={{ color: '#B9BDC4', fontSize: 11 }}>
+        MAGMA Settlement &amp; Community Services
       </p>
     </div>
   );
@@ -206,9 +188,9 @@ export default function App() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: '#0a0a0f',
+        background: '#FCFCFB',
       }}>
-        <Loader2 size={32} color="#00d4ff" style={{ animation: 'spin 1s linear infinite' }} />
+        <Loader2 size={32} color="#FEA614" style={{ animation: 'spin 1s linear infinite' }} />
       </div>
     );
   }

@@ -2,7 +2,7 @@
    MAGMA Reception App — Global Styles
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Open+Sans:wght@400;500;600;700&display=swap');
 
 /* ── Reset ── */
 *,
@@ -50,9 +50,11 @@ a:hover {
 
 /* ── Headings ── */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-primary);
+  color: var(--brand-ink);
+  font-family: var(--font-head);
   font-weight: var(--weight-semibold);
   line-height: var(--leading-tight);
+  letter-spacing: -0.2px;
 }
 
 /* ── Selection ── */
@@ -144,29 +146,26 @@ ul, ol {
   list-style: none;
 }
 
-/* ── Native select dropdown: force dark theme ──
-   colorScheme: dark inline style isn't reliable when OS is in light mode,
-   so we explicitly style option elements. Supported in Chromium (Edge, Chrome)
-   and Firefox 102+. */
+/* ── Native select dropdown: light theme ── */
 select {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 select option {
-  background-color: #14141F;
-  color: #E8E8EC;
+  background-color: #FFFFFF;
+  color: var(--brand-ink);
 }
 
 select option:checked,
 select option:hover {
-  background-color: #00d4ff;
-  color: #0A0A0F;
+  background-color: var(--brand-orange);
+  color: #FFFFFF;
 }
 
-/* Date and number input native UI (calendar icon, spinner) in dark mode */
+/* Date and number input native UI (calendar icon, spinner) in light mode */
 input[type="date"],
 input[type="month"],
 input[type="number"],
 input[type="time"] {
-  color-scheme: dark;
+  color-scheme: light;
 }

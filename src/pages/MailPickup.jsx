@@ -34,15 +34,16 @@ const fadeInUp = {
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
 
 const statusColor = {
-  Pending: '#ffab00',
-  'Picked Up': '#00e676',
-  Cancelled: '#8b949e',
+  Pending: '#FEA614',
+  'Picked Up': '#31D3AE',
+  Cancelled: '#9AA0A6',
 };
 
 const s = {
   hero: {
-    background: 'linear-gradient(135deg, rgba(0,212,255,0.08) 0%, rgba(168,85,247,0.06) 100%)',
-    border: '1px solid rgba(0,212,255,0.2)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-6)',
     marginBottom: 'var(--space-6)',
@@ -52,16 +53,16 @@ const s = {
   },
   heroIcon: {
     width: 56, height: 56, borderRadius: 14,
-    background: 'rgba(0,212,255,0.15)',
+    background: '#39C0E0',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     flexShrink: 0,
   },
-  heroTitle: { fontSize: 'var(--text-xl)', fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 },
+  heroTitle: { fontSize: 'var(--text-xl)', fontWeight: 700, color: 'var(--brand-ink)', marginBottom: 4 },
   heroSubtitle: { fontSize: 'var(--text-sm)', color: 'var(--text-muted)' },
   formCard: {
-    background: 'var(--glass-bg)',
-    backdropFilter: 'blur(var(--glass-blur))',
-    border: '1px solid var(--glass-border)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)',
+    boxShadow: 'var(--shadow-sm)',
     borderRadius: 'var(--radius-lg)',
     padding: 'var(--space-6)',
     marginBottom: 'var(--space-6)',
@@ -74,27 +75,27 @@ const s = {
   searchIcon: { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' },
   input: {
     width: '100%', padding: '12px 14px 12px 44px', borderRadius: 10,
-    background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)',
-    color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 48,
-    boxSizing: 'border-box', colorScheme: 'dark',
+    background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+    color: 'var(--brand-ink)', fontSize: 14, outline: 'none', minHeight: 48,
+    boxSizing: 'border-box', colorScheme: 'light',
   },
   inputPlain: {
     width: '100%', padding: '12px 14px', borderRadius: 10,
-    background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)',
-    color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 48,
-    boxSizing: 'border-box', colorScheme: 'dark',
+    background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+    color: 'var(--brand-ink)', fontSize: 14, outline: 'none', minHeight: 48,
+    boxSizing: 'border-box', colorScheme: 'light',
   },
   textarea: {
     width: '100%', padding: '12px 14px', borderRadius: 10,
-    background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)',
-    color: 'var(--text-primary)', fontSize: 14, outline: 'none',
+    background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+    color: 'var(--brand-ink)', fontSize: 14, outline: 'none',
     minHeight: 80, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box',
   },
   dropdown: {
     position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-    background: 'var(--bg-card)', border: '1px solid var(--glass-border)',
+    background: 'var(--bg-card)', border: '1px solid var(--border-default)',
     borderRadius: 10, maxHeight: 280, overflowY: 'auto', zIndex: 50,
-    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+    boxShadow: 'var(--shadow-md)',
   },
   dropdownItem: {
     padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
@@ -102,17 +103,17 @@ const s = {
   },
   dropdownItemActive: {
     padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10,
-    borderBottom: '1px solid var(--border-subtle)', background: 'rgba(0,212,255,0.1)',
+    borderBottom: '1px solid var(--border-subtle)', background: 'rgba(64,58,96,0.08)',
   },
   avatarSmall: {
-    width: 32, height: 32, borderRadius: '50%', background: 'rgba(0,212,255,0.2)',
+    width: 32, height: 32, borderRadius: '50%', background: '#39C0E0',
     display: 'flex', alignItems: 'center', justifyContent: 'center',
-    color: '#00d4ff', fontWeight: 700, fontSize: 12, flexShrink: 0,
+    color: '#fff', fontWeight: 700, fontSize: 12, flexShrink: 0,
   },
   selectedRecipient: {
     display: 'flex', alignItems: 'center', gap: 12,
     padding: '12px 14px', borderRadius: 10,
-    background: 'rgba(0,212,255,0.08)', border: '1px solid rgba(0,212,255,0.3)',
+    background: 'rgba(72,193,225,0.1)', border: '1px solid rgba(72,193,225,0.35)',
   },
   selectedClearBtn: {
     background: 'none', border: 'none', color: 'var(--text-muted)',
@@ -120,29 +121,30 @@ const s = {
   },
   submitBtn: (loading, success) => ({
     width: '100%', padding: 14, borderRadius: 10, border: 'none',
-    fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer',
+    fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer',
     minHeight: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     marginTop: 8,
-    background: success ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)',
-    color: success ? '#00e676' : '#061218',
+    background: success ? 'rgba(87,193,165,0.2)' : 'var(--brand-navy)',
+    color: success ? '#3E9E85' : '#fff',
   }),
-  error: { color: '#ff3d5a', fontSize: 13, marginTop: 8, textAlign: 'center' },
+  error: { color: '#E05563', fontSize: 13, marginTop: 8, textAlign: 'center' },
   // Tabs
   tabRow: {
     display: 'flex', gap: 4, marginBottom: 'var(--space-4)',
-    borderBottom: '1px solid var(--glass-border)',
+    borderBottom: '1px solid var(--border-default)',
   },
   tab: (active) => ({
     padding: '12px 20px', cursor: 'pointer', fontWeight: 600, fontSize: 14,
-    color: active ? '#00d4ff' : 'var(--text-muted)',
-    borderBottom: active ? '2px solid #00d4ff' : '2px solid transparent',
+    color: active ? 'var(--brand-navy)' : 'var(--text-muted)',
+    borderBottom: active ? '2px solid var(--brand-navy)' : '2px solid transparent',
     background: 'none', border: 'none', borderRadius: 0,
     marginBottom: -1, display: 'flex', alignItems: 'center', gap: 6,
   }),
   // List
   listCard: {
-    background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))',
-    border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)',
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)',
+    boxShadow: 'var(--shadow-sm)',
     overflow: 'hidden',
   },
   row: {
@@ -151,7 +153,7 @@ const s = {
     transition: 'background 0.15s',
   },
   rowMain: { flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 },
-  rowName: { fontSize: 14, fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 },
+  rowName: { fontSize: 14, fontWeight: 600, color: 'var(--brand-ink)', display: 'flex', alignItems: 'center', gap: 8 },
   rowEmail: { fontSize: 12, color: 'var(--text-dim)' },
   rowDesc: { fontSize: 12, color: 'var(--text-muted)', fontStyle: 'italic', marginTop: 4 },
   rowMeta: { display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, minWidth: 110 },
@@ -172,8 +174,8 @@ const s = {
     color: 'var(--text-dim)', fontSize: 14,
   },
   loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: 'var(--text-muted)' },
-  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#ff3d5a' },
-  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(255,61,90,0.15)', border: '1px solid rgba(255,61,90,0.3)', color: '#ff3d5a', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
+  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#E05563' },
+  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(241,98,120,0.12)', border: '1px solid rgba(241,98,120,0.3)', color: '#E05563', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
 };
 
 function initials(name) {
@@ -440,7 +442,7 @@ export default function MailPickup() {
         {/* Hero */}
         <motion.div style={s.hero} variants={fadeInUp} custom={0}>
           <div style={s.heroIcon}>
-            <Mail size={28} color="#00d4ff" />
+            <Mail size={28} color="#fff" />
           </div>
           <div>
             <div style={s.heroTitle}>Mail Pickup Notifications</div>
@@ -458,7 +460,7 @@ export default function MailPickup() {
               <div style={s.selectedRecipient}>
                 <div style={s.avatarSmall}>{initials(selectedRecipient.name)}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedRecipient.name}</div>
+                  <div style={{ fontWeight: 600, color: 'var(--brand-ink)' }}>{selectedRecipient.name}</div>
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{selectedRecipient.email}</div>
                 </div>
                 <button type="button" style={s.selectedClearBtn} onClick={handleClearRecipient}>
@@ -493,7 +495,7 @@ export default function MailPickup() {
                       >
                         <div style={s.avatarSmall}>{initials(u.name)}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{u.name}</div>
+                          <div style={{ fontWeight: 600, color: 'var(--brand-ink)', fontSize: 13 }}>{u.name}</div>
                           <div style={{ fontSize: 11, color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {u.email}{u.title ? ` · ${u.title}` : ''}
                           </div>
@@ -536,7 +538,7 @@ export default function MailPickup() {
         {/* Log header */}
         <motion.div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 'var(--space-4)', color: 'var(--text-muted)', fontSize: 'var(--text-sm)', fontWeight: 600 }} variants={fadeInUp} custom={2}>
           <Inbox size={14} /> Mail notified
-          <span style={{ ...s.badge('#00d4ff'), marginLeft: 2 }}>{visibleItems.length}</span>
+          <span style={{ ...s.badge('#413C60'), background: '#413C60', color: '#fff', marginLeft: 2 }}>{visibleItems.length}</span>
         </motion.div>
 
         {/* List */}
@@ -550,7 +552,7 @@ export default function MailPickup() {
               <motion.div
                 key={item.id}
                 style={s.row}
-                whileHover={{ backgroundColor: 'rgba(255,255,255,0.02)' }}
+                whileHover={{ backgroundColor: 'rgba(64,58,96,0.04)' }}
               >
                 <div style={s.avatarSmall}>{initials(item.recipientName)}</div>
                 <div style={s.rowMain}>

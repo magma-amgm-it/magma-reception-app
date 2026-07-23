@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { isAdmin, isReception } from '../../services/admin';
-import magmaRing from '../../assets/magma-ring.png';
+import magmaLogoWhite from '../../assets/magma-logo-white.png';
 import './Sidebar.css';
 
 const navItems = [
@@ -50,30 +50,29 @@ export default function Sidebar() {
         aria-label="Open menu"
         style={{
           position: 'fixed',
-          top: 16,
+          top: 8,
           left: 16,
           zIndex: 200,
           width: 48,
           height: 48,
           borderRadius: 14,
-          background: 'rgba(0, 212, 255, 0.1)',
-          border: '1px solid rgba(0, 212, 255, 0.25)',
+          background: '#413C60',
+          border: 'none',
           display: open ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          color: '#00d4ff',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
+          color: '#ffffff',
+          boxShadow: '0 4px 14px rgba(40, 39, 64, 0.22)',
           transition: 'all 0.2s ease',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(0, 212, 255, 0.2)';
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(0, 212, 255, 0.3)';
+          e.currentTarget.style.background = '#37324F';
+          e.currentTarget.style.boxShadow = '0 6px 20px rgba(40, 39, 64, 0.32)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(0, 212, 255, 0.1)';
-          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.background = '#413C60';
+          e.currentTarget.style.boxShadow = '0 4px 14px rgba(40, 39, 64, 0.22)';
         }}
       >
         <BellRing size={22} />
@@ -105,7 +104,7 @@ export default function Sidebar() {
       <AnimatePresence>
         {open && (
           <motion.aside
-            className="sidebar glass-heavy"
+            className="sidebar"
             initial={{ x: -280 }}
             animate={{ x: 0 }}
             exit={{ x: -280 }}
@@ -124,39 +123,40 @@ export default function Sidebar() {
             {/* Logo + close button */}
             <div className="sidebar-logo">
               <img
-                src={magmaRing}
-                alt="MAGMA"
-                style={{ width: 38, height: 38, flexShrink: 0, objectFit: 'contain' }}
+                src={magmaLogoWhite}
+                alt="MAGMA AMGM"
+                style={{ width: 182, height: 'auto', objectFit: 'contain' }}
               />
-              <span className="logo-text">MAGMA</span>
               <button
                 className="sidebar-close"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
                 style={{
-                  marginLeft: 'auto',
-                  width: 36,
-                  height: 36,
-                  borderRadius: 10,
+                  position: 'absolute',
+                  top: 8,
+                  right: 4,
+                  width: 24,
+                  height: 24,
+                  borderRadius: 8,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  color: 'var(--text-muted)',
+                  color: 'rgba(255, 255, 255, 0.55)',
                   cursor: 'pointer',
                   background: 'transparent',
                   border: 'none',
                   transition: 'all 0.2s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.color = '#ff3d5a';
-                  e.currentTarget.style.background = 'rgba(255, 61, 90, 0.1)';
+                  e.currentTarget.style.color = '#ffffff';
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.color = 'var(--text-muted)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.55)';
                   e.currentTarget.style.background = 'transparent';
                 }}
               >
-                <X size={20} />
+                <X size={16} />
               </button>
             </div>
 
@@ -197,7 +197,7 @@ export default function Sidebar() {
                 {user?.photoUrl ? (
                   <img src={user.photoUrl} alt={userName} style={{
                     width: 36, height: 36, borderRadius: 10, objectFit: 'cover',
-                    border: '2px solid rgba(0,212,255,0.3)',
+                    border: '2px solid rgba(255,255,255,0.25)',
                   }} />
                 ) : (
                   <div className="user-avatar">{userInitial}</div>
@@ -221,16 +221,16 @@ export default function Sidebar() {
                   style={{
                     marginLeft: 'auto', width: 34, height: 34, borderRadius: 8,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--text-muted)', cursor: 'pointer',
+                    color: 'rgba(255,255,255,0.55)', cursor: 'pointer',
                     background: 'transparent', border: 'none', flexShrink: 0,
                     transition: 'all 0.2s ease',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.color = '#ff3d5a';
-                    e.currentTarget.style.background = 'rgba(255,61,90,0.1)';
+                    e.currentTarget.style.color = '#E06B7A';
+                    e.currentTarget.style.background = 'rgba(241,98,120,0.14)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.color = 'var(--text-muted)';
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.55)';
                     e.currentTarget.style.background = 'transparent';
                   }}
                 >

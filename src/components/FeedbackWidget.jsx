@@ -17,11 +17,11 @@ import { createFeedback } from '../services/graphApi';
 import { useAuth } from '../hooks/useAuth';
 
 const TYPES = [
-  { key: 'Bug', label: 'Bug', icon: Bug, color: '#ff3d5a' },
-  { key: 'Feature Request', label: 'Feature', icon: Sparkles, color: '#00d4ff' },
-  { key: 'UI Improvement', label: 'UI', icon: Palette, color: '#a855f7' },
-  { key: 'Question', label: 'Question', icon: HelpCircle, color: '#ffab00' },
-  { key: 'Other', label: 'Other', icon: MoreHorizontal, color: '#8b949e' },
+  { key: 'Bug', label: 'Bug', icon: Bug, color: '#E06B7A' },
+  { key: 'Feature Request', label: 'Feature', icon: Sparkles, color: '#39C0E0' },
+  { key: 'UI Improvement', label: 'UI', icon: Palette, color: '#7C76B8' },
+  { key: 'Question', label: 'Question', icon: HelpCircle, color: '#FEA614' },
+  { key: 'Other', label: 'Other', icon: MoreHorizontal, color: '#8792A0' },
 ];
 
 const SEVERITIES = ['Low', 'Medium', 'High'];
@@ -126,8 +126,8 @@ export default function FeedbackWidget() {
       {/* Pulse keyframes injected once */}
       <style>{`
         @keyframes feedbackPulse {
-          0%, 100% { box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35), 0 0 0 0 rgba(168, 85, 247, 0.55); }
-          50%      { box-shadow: 0 8px 24px rgba(0, 212, 255, 0.35), 0 0 0 14px rgba(168, 85, 247, 0); }
+          0%, 100% { box-shadow: 0 8px 22px rgba(40, 39, 64, 0.22), 0 0 0 0 rgba(254, 166, 20, 0.5); }
+          50%      { box-shadow: 0 8px 22px rgba(40, 39, 64, 0.22), 0 0 0 14px rgba(254, 166, 20, 0); }
         }
       `}</style>
 
@@ -146,14 +146,14 @@ export default function FeedbackWidget() {
           width: 56,
           height: 56,
           borderRadius: 16,
-          background: 'linear-gradient(135deg, #00d4ff, #a855f7)',
+          background: '#413C60',
           border: 'none',
           color: '#fff',
           cursor: 'pointer',
           display: open ? 'none' : 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 8px 24px rgba(0, 212, 255, 0.35)',
+          boxShadow: '0 8px 22px rgba(40, 39, 64, 0.22)',
           animation: showIntro ? 'feedbackPulse 1.6s ease-in-out infinite' : 'none',
         }}
       >
@@ -177,12 +177,11 @@ export default function FeedbackWidget() {
               maxWidth: 280,
               padding: '14px 16px',
               borderRadius: 14,
-              background: 'linear-gradient(135deg, rgba(22,27,34,0.96), rgba(13,17,23,0.96))',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(168, 85, 247, 0.35)',
-              boxShadow: '0 12px 32px rgba(0,0,0,0.4), 0 0 24px rgba(168,85,247,0.15)',
+              background: '#FFFFFF',
+              border: '1px solid #E4E4E8',
+              boxShadow: '0 12px 32px rgba(40,39,64,0.16)',
               cursor: 'pointer',
-              color: '#e6edf3',
+              color: '#2B2740',
             }}
           >
             {/* Speech-bubble tail pointing to button */}
@@ -192,9 +191,9 @@ export default function FeedbackWidget() {
               right: 26,
               width: 14,
               height: 14,
-              background: 'rgba(13,17,23,0.96)',
-              borderRight: '1px solid rgba(168, 85, 247, 0.35)',
-              borderBottom: '1px solid rgba(168, 85, 247, 0.35)',
+              background: '#FFFFFF',
+              borderRight: '1px solid #E4E4E8',
+              borderBottom: '1px solid #E4E4E8',
               transform: 'rotate(45deg)',
             }} />
 
@@ -210,13 +209,13 @@ export default function FeedbackWidget() {
                 borderRadius: 6,
                 border: 'none',
                 background: 'transparent',
-                color: '#8b949e',
+                color: '#9AA0A6',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
-              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(40,39,64,0.05)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
               <X size={13} />
@@ -225,23 +224,22 @@ export default function FeedbackWidget() {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10, paddingRight: 14 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 8, flexShrink: 0,
-                background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2))',
-                border: '1px solid rgba(168,85,247,0.3)',
+                background: 'rgba(254,166,20,0.14)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Lightbulb size={15} color="#ffab00" />
+                <Lightbulb size={15} color="#FEA614" />
               </div>
               <div style={{ minWidth: 0 }}>
                 <div style={{
-                  fontSize: 10, color: '#a855f7', fontWeight: 700, letterSpacing: 1,
+                  fontSize: 10, color: '#FEA614', fontWeight: 700, letterSpacing: 1,
                   marginBottom: 4,
                 }}>
                   NEW
                 </div>
-                <div style={{ fontSize: 13, lineHeight: 1.45, fontWeight: 500 }}>
+                <div style={{ fontSize: 13, lineHeight: 1.45, fontWeight: 600, color: '#2B2740' }}>
                   Got an idea? Found a bug? Let me know!
                 </div>
-                <div style={{ fontSize: 11, color: '#8b949e', marginTop: 6 }}>
+                <div style={{ fontSize: 11, color: '#9AA0A6', marginTop: 6 }}>
                   Click anywhere on this card to start.
                 </div>
               </div>
@@ -262,7 +260,7 @@ export default function FeedbackWidget() {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(0, 0, 0, 0.6)',
+              background: 'rgba(40, 39, 64, 0.4)',
               backdropFilter: 'blur(6px)',
               WebkitBackdropFilter: 'blur(6px)',
               zIndex: 400,
@@ -282,13 +280,12 @@ export default function FeedbackWidget() {
                 width: 'min(520px, 100%)',
                 maxHeight: '90vh',
                 overflow: 'auto',
-                background: 'rgba(22, 27, 34, 0.95)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 20,
+                background: '#FFFFFF',
+                border: '1px solid #E4E4E8',
+                borderRadius: 16,
                 padding: 28,
-                color: '#e6edf3',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+                color: '#2B2740',
+                boxShadow: '0 24px 64px rgba(40,39,64,0.22)',
               }}
             >
               {success ? (
@@ -299,15 +296,15 @@ export default function FeedbackWidget() {
                     transition={{ type: 'spring', stiffness: 300, damping: 18 }}
                     style={{
                       width: 64, height: 64, borderRadius: 16,
-                      background: 'rgba(0, 230, 118, 0.15)',
-                      border: '2px solid rgba(0, 230, 118, 0.4)',
+                      background: 'rgba(87, 193, 165, 0.15)',
+                      border: '2px solid rgba(87, 193, 165, 0.4)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                   >
-                    <Check size={32} color="#00e676" strokeWidth={2.5} />
+                    <Check size={32} color="#31D3AE" strokeWidth={2.5} />
                   </motion.div>
                   <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Thanks! 🙌</h3>
-                  <p style={{ color: '#8b949e', fontSize: 13, margin: 0, textAlign: 'center' }}>
+                  <p style={{ color: '#525366', fontSize: 13, margin: 0, textAlign: 'center' }}>
                     Your feedback was sent to the admin. We'll review and act on it.
                   </p>
                 </div>
@@ -317,15 +314,15 @@ export default function FeedbackWidget() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
                     <div style={{
                       width: 40, height: 40, borderRadius: 12,
-                      background: 'linear-gradient(135deg, rgba(0,212,255,0.2), rgba(168,85,247,0.2))',
+                      background: 'rgba(254,166,20,0.14)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}>
-                      <MessageSquare size={20} color="#00d4ff" />
+                      <MessageSquare size={20} color="#FEA614" />
                     </div>
                     <div style={{ flex: 1 }}>
                       <h3 style={{ fontSize: 18, fontWeight: 600, margin: 0 }}>Send feedback</h3>
-                      <p style={{ fontSize: 12, color: '#8b949e', margin: '2px 0 0' }}>
-                        From <strong style={{ color: '#e6edf3' }}>{currentPage}</strong>
+                      <p style={{ fontSize: 12, color: '#9AA0A6', margin: '2px 0 0' }}>
+                        From <strong style={{ color: '#2B2740' }}>{currentPage}</strong>
                         {user?.name && <> · as {user.name}</>}
                       </p>
                     </div>
@@ -334,7 +331,7 @@ export default function FeedbackWidget() {
                       onClick={() => !submitting && setOpen(false)}
                       style={{
                         width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent',
-                        color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: '#9AA0A6', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
                       <X size={18} />
@@ -342,7 +339,7 @@ export default function FeedbackWidget() {
                   </div>
 
                   {/* Type chips */}
-                  <label style={{ fontSize: 12, color: '#8b949e', marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <label style={{ fontSize: 12, color: '#9AA0A6', marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     What kind?
                   </label>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
@@ -364,9 +361,9 @@ export default function FeedbackWidget() {
                             fontWeight: 500,
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
-                            background: active ? `${t.color}25` : 'rgba(255,255,255,0.04)',
-                            border: `1px solid ${active ? `${t.color}60` : 'rgba(255,255,255,0.08)'}`,
-                            color: active ? t.color : '#e6edf3',
+                            background: active ? `${t.color}22` : '#F7F7F9',
+                            border: `1px solid ${active ? `${t.color}80` : '#E4E4E8'}`,
+                            color: active ? t.color : '#525366',
                           }}
                         >
                           <Icon size={14} />
@@ -377,7 +374,7 @@ export default function FeedbackWidget() {
                   </div>
 
                   {/* Description */}
-                  <label style={{ fontSize: 12, color: '#8b949e', marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <label style={{ fontSize: 12, color: '#9AA0A6', marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     What's on your mind?
                   </label>
                   <textarea
@@ -397,9 +394,9 @@ export default function FeedbackWidget() {
                       width: '100%',
                       padding: 12,
                       borderRadius: 10,
-                      background: 'rgba(0,0,0,0.2)',
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      color: '#e6edf3',
+                      background: '#F9F9F9',
+                      border: '1px solid #E4E4E8',
+                      color: '#2B2740',
                       fontSize: 14,
                       fontFamily: 'inherit',
                       resize: 'vertical',
@@ -407,18 +404,18 @@ export default function FeedbackWidget() {
                       outline: 'none',
                       boxSizing: 'border-box',
                     }}
-                    onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(0,212,255,0.4)'}
-                    onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
+                    onFocus={(e) => e.currentTarget.style.borderColor = '#FEA614'}
+                    onBlur={(e) => e.currentTarget.style.borderColor = '#E4E4E8'}
                   />
 
                   {/* Severity */}
-                  <label style={{ fontSize: 12, color: '#8b949e', marginTop: 16, marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <label style={{ fontSize: 12, color: '#9AA0A6', marginTop: 16, marginBottom: 8, display: 'block', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     How urgent?
                   </label>
                   <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                     {SEVERITIES.map((s) => {
                       const active = severity === s;
-                      const color = s === 'High' ? '#ff3d5a' : s === 'Medium' ? '#ffab00' : '#00e676';
+                      const color = s === 'High' ? '#E06B7A' : s === 'Medium' ? '#FEA614' : '#31D3AE';
                       return (
                         <button
                           key={s}
@@ -428,9 +425,9 @@ export default function FeedbackWidget() {
                             flex: 1,
                             padding: '10px',
                             borderRadius: 10,
-                            background: active ? `${color}25` : 'rgba(255,255,255,0.04)',
-                            border: `1px solid ${active ? `${color}60` : 'rgba(255,255,255,0.08)'}`,
-                            color: active ? color : '#e6edf3',
+                            background: active ? `${color}22` : '#F7F7F9',
+                            border: `1px solid ${active ? `${color}80` : '#E4E4E8'}`,
+                            color: active ? color : '#525366',
                             fontSize: 13,
                             fontWeight: 500,
                             cursor: 'pointer',
@@ -447,8 +444,8 @@ export default function FeedbackWidget() {
                   {error && (
                     <div style={{
                       padding: '10px 14px', borderRadius: 8, marginBottom: 14,
-                      background: 'rgba(255,61,90,0.1)', border: '1px solid rgba(255,61,90,0.2)',
-                      color: '#ff3d5a', fontSize: 13,
+                      background: 'rgba(241,98,120,0.1)', border: '1px solid rgba(241,98,120,0.25)',
+                      color: '#D8455A', fontSize: 13,
                     }}>
                       {error}
                     </div>
@@ -461,12 +458,13 @@ export default function FeedbackWidget() {
                     style={{
                       width: '100%',
                       padding: '12px 20px',
-                      borderRadius: 12,
+                      borderRadius: 10,
                       background: submitting || !description.trim()
-                        ? 'rgba(0,212,255,0.15)'
-                        : 'linear-gradient(135deg, #00d4ff, #a855f7)',
+                        ? '#FFD48A'
+                        : '#FEA614',
                       border: 'none',
                       color: '#fff',
+                      fontFamily: "'Poppins', sans-serif",
                       fontSize: 15,
                       fontWeight: 600,
                       cursor: submitting || !description.trim() ? 'not-allowed' : 'pointer',
@@ -486,7 +484,7 @@ export default function FeedbackWidget() {
                     )}
                   </button>
 
-                  <p style={{ fontSize: 11, color: '#484f58', textAlign: 'center', marginTop: 12, marginBottom: 0 }}>
+                  <p style={{ fontSize: 11, color: '#B9BDC4', textAlign: 'center', marginTop: 12, marginBottom: 0 }}>
                     Sent to the admin's inbox. Your name & email are attached automatically.
                   </p>
                 </form>

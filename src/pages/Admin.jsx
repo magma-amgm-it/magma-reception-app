@@ -60,41 +60,44 @@ const getItemUser = (item) => {
 };
 
 const FEEDBACK_TYPE_META = {
-  Bug: { icon: Bug, color: '#ff3d5a' },
-  'Feature Request': { icon: Sparkles, color: '#00d4ff' },
-  'UI Improvement': { icon: Palette, color: '#a855f7' },
-  Question: { icon: HelpCircle, color: '#ffab00' },
-  Other: { icon: MoreHorizontal, color: '#8b949e' },
+  Bug: { icon: Bug, color: '#E06B7A' },
+  'Feature Request': { icon: Sparkles, color: '#39C0E0' },
+  'UI Improvement': { icon: Palette, color: '#7C76B8' },
+  Question: { icon: HelpCircle, color: '#FEA614' },
+  Other: { icon: MoreHorizontal, color: '#9AA0A6' },
 };
 
 const STATUS_COLORS = {
-  New: '#ff3d5a',
-  'In Review': '#ffab00',
-  'In Progress': '#a855f7',
-  Done: '#00e676',
-  "Won't Do": '#8b949e',
+  New: '#E06B7A',
+  'In Review': '#FEA614',
+  'In Progress': '#7C76B8',
+  Done: '#31D3AE',
+  "Won't Do": '#9AA0A6',
 };
 
 const LIST_META = {
-  supplyRequests: { label: 'Supply Request', icon: PackageSearch, color: '#00d4ff' },
-  clientLog: { label: 'Client Visit', icon: Users, color: '#a855f7' },
-  inventory: { label: 'Inventory', icon: Warehouse, color: '#00e676' },
-  purchaseOrders: { label: 'Purchase Order', icon: ShoppingCart, color: '#ffab00' },
-  mailPickups: { label: 'Mail Pickup', icon: Mail, color: '#26c6da' },
-  appFeedback: { label: 'Feedback', icon: MessageSquare, color: '#ff006e' },
+  supplyRequests: { label: 'Supply Request', icon: PackageSearch, color: '#39C0E0' },
+  clientLog: { label: 'Client Visit', icon: Users, color: '#7C76B8' },
+  inventory: { label: 'Inventory', icon: Warehouse, color: '#31D3AE' },
+  purchaseOrders: { label: 'Purchase Order', icon: ShoppingCart, color: '#FEA614' },
+  mailPickups: { label: 'Mail Pickup', icon: Mail, color: '#F79E6F' },
+  appFeedback: { label: 'Feedback', icon: MessageSquare, color: '#E06B7A' },
 };
 
-// ─── Glass card style ─────────────────────────────
+// ─── Chart palette (MAGMA service colours) ─────────
+const CHART_PALETTE = ['#E06B7A', '#31D3AE', '#FEA614', '#39C0E0', '#BFD330', '#413C60', '#F79E6F', '#7C76B8', '#A4113A'];
+
+// ─── Card style ───────────────────────────────────
 const cardStyle = {
-  background: 'rgba(22, 27, 34, 0.6)',
-  backdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255,255,255,0.06)',
-  borderRadius: 16,
+  background: 'var(--bg-card)',
+  border: '1px solid var(--border-default)',
+  borderRadius: 'var(--radius-lg)',
+  boxShadow: 'var(--shadow-sm)',
   padding: 20,
 };
 
 // ─── Stat card ─────────────────────────────────────
-function StatCard({ icon: Icon, label, value, sublabel, color = '#00d4ff', delay = 0 }) {
+function StatCard({ icon: Icon, label, value, sublabel, color = '#413C60', delay = 0 }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 14 }}
@@ -111,19 +114,18 @@ function StatCard({ icon: Icon, label, value, sublabel, color = '#00d4ff', delay
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{
           width: 36, height: 36, borderRadius: 10,
-          background: `${color}15`,
-          border: `1px solid ${color}30`,
+          background: color,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Icon size={18} color={color} />
+          <Icon size={18} color="#fff" />
         </div>
-        <span style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.6 }}>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.6 }}>
           {label}
         </span>
       </div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: '#e6edf3' }}>{value}</div>
+      <div style={{ fontFamily: 'var(--font-head)', fontSize: 28, fontWeight: 700, color: 'var(--brand-ink)' }}>{value}</div>
       {sublabel && (
-        <div style={{ fontSize: 12, color: '#8b949e' }}>{sublabel}</div>
+        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{sublabel}</div>
       )}
     </motion.div>
   );
@@ -187,7 +189,7 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 500,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        background: 'rgba(40,39,64,0.4)', backdropFilter: 'blur(6px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
       }}
     >
@@ -201,13 +203,12 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
           width: 'min(620px, 100%)',
           maxHeight: '90vh',
           overflow: 'auto',
-          background: 'rgba(22, 27, 34, 0.96)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)',
           borderRadius: 20,
           padding: 28,
-          color: '#e6edf3',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+          color: 'var(--brand-ink)',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         {/* Header */}
@@ -223,46 +224,46 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
             <div style={{ fontSize: 11, color: meta.color, fontWeight: 700, letterSpacing: 0.5 }}>
               {type.toUpperCase()} · {f.Severity || 'Medium'} severity
             </div>
-            <div style={{ fontSize: 13, color: '#8b949e' }}>
-              From <strong style={{ color: '#e6edf3' }}>{user.name}</strong> on {f.Page || '—'}
+            <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              From <strong style={{ color: 'var(--brand-ink)' }}>{user.name}</strong> on {f.Page || '—'}
               {created && <> · {format(created, 'MMM d, yyyy h:mm a')}</>}
             </div>
           </div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent',
-            color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><X size={18} /></button>
         </div>
 
         {/* Description */}
-        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+        <label style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
           Description
         </label>
         <div style={{
           padding: 14, borderRadius: 10, marginBottom: 18,
-          background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)',
+          background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
           fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
         }}>
           {f.Description || '(no description)'}
         </div>
 
         {/* Status */}
-        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+        <label style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
           Status
         </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
           {['New', 'In Review', 'In Progress', 'Done', "Won't Do"].map((s) => {
             const active = status === s;
-            const c = STATUS_COLORS[s] || '#8b949e';
+            const c = STATUS_COLORS[s] || '#9AA0A6';
             return (
               <button
                 key={s}
                 onClick={() => setStatus(s)}
                 style={{
                   padding: '7px 12px', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  background: active ? `${c}25` : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? `${c}60` : 'rgba(255,255,255,0.08)'}`,
-                  color: active ? c : '#e6edf3',
+                  background: active ? `${c}25` : 'var(--bg-surface)',
+                  border: `1px solid ${active ? `${c}60` : 'var(--border-default)'}`,
+                  color: active ? c : 'var(--brand-ink)',
                 }}
               >{s}</button>
             );
@@ -270,7 +271,7 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
         </div>
 
         {/* Admin notes */}
-        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+        <label style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
           Admin notes (only you see this)
         </label>
         <textarea
@@ -280,14 +281,14 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
           placeholder="Triage notes, plan, follow-ups…"
           style={{
             width: '100%', padding: 12, borderRadius: 10, boxSizing: 'border-box',
-            background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)',
-            color: '#e6edf3', fontSize: 13, fontFamily: 'inherit', resize: 'vertical',
+            background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+            color: 'var(--brand-ink)', fontSize: 13, fontFamily: 'inherit', resize: 'vertical',
             outline: 'none', marginBottom: 14,
           }}
         />
 
         {/* Implemented commit */}
-        <label style={{ fontSize: 11, color: '#8b949e', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
+        <label style={{ fontSize: 11, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 6, display: 'block' }}>
           Implemented commit (optional)
         </label>
         <input
@@ -297,8 +298,8 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
           placeholder="e.g. ab3f576"
           style={{
             width: '100%', padding: '10px 12px', borderRadius: 10, boxSizing: 'border-box',
-            background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.08)',
-            color: '#e6edf3', fontSize: 13, fontFamily: 'monospace',
+            background: 'var(--bg-surface)', border: '1px solid var(--border-default)',
+            color: 'var(--brand-ink)', fontSize: 13, fontFamily: 'monospace',
             outline: 'none', marginBottom: 18,
           }}
         />
@@ -306,8 +307,8 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
         {error && (
           <div style={{
             padding: '10px 14px', borderRadius: 8, marginBottom: 14,
-            background: 'rgba(255,61,90,0.1)', border: '1px solid rgba(255,61,90,0.2)',
-            color: '#ff3d5a', fontSize: 13,
+            background: 'rgba(224,85,99,0.1)', border: '1px solid rgba(224,85,99,0.25)',
+            color: '#E05563', fontSize: 13,
           }}>{error}</div>
         )}
 
@@ -318,8 +319,8 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
               onClick={() => setConfirmDelete(true)}
               style={{
                 padding: '10px 14px', borderRadius: 10, cursor: 'pointer',
-                background: 'transparent', border: '1px solid rgba(255,61,90,0.25)',
-                color: '#ff3d5a', fontSize: 12, fontWeight: 600,
+                background: 'transparent', border: '1px solid rgba(224,85,99,0.3)',
+                color: '#E05563', fontSize: 12, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 6,
               }}
             >
@@ -327,22 +328,22 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
             </button>
           ) : (
             <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#ff3d5a' }}>Sure?</span>
+              <span style={{ fontSize: 12, color: '#E05563' }}>Sure?</span>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 style={{
                   padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                  background: 'rgba(255,61,90,0.2)', border: '1px solid rgba(255,61,90,0.4)',
-                  color: '#ff3d5a', fontSize: 12, fontWeight: 600,
+                  background: '#E05563', border: '1px solid #E05563',
+                  color: '#fff', fontSize: 12, fontWeight: 600,
                 }}
               >{deleting ? 'Deleting…' : 'Yes, delete'}</button>
               <button
                 onClick={() => setConfirmDelete(false)}
                 style={{
                   padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-                  background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#e6edf3', fontSize: 12,
+                  background: 'transparent', border: '1px solid var(--border-default)',
+                  color: 'var(--brand-ink)', fontSize: 12,
                 }}
               >Cancel</button>
             </div>
@@ -353,8 +354,8 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
               onClick={onClose}
               style={{
                 padding: '10px 18px', borderRadius: 10, cursor: 'pointer',
-                background: 'transparent', border: '1px solid rgba(255,255,255,0.08)',
-                color: '#e6edf3', fontSize: 13, fontWeight: 500,
+                background: 'transparent', border: '1px solid var(--border-default)',
+                color: 'var(--brand-ink)', fontSize: 13, fontWeight: 500,
               }}
             >Close</button>
             <button
@@ -363,7 +364,7 @@ function FeedbackDetailModal({ item, onClose, onChanged }) {
               style={{
                 padding: '10px 18px', borderRadius: 10,
                 cursor: !dirty || saving ? 'not-allowed' : 'pointer',
-                background: !dirty || saving ? 'rgba(0,212,255,0.15)' : 'linear-gradient(135deg, #00d4ff, #a855f7)',
+                background: !dirty || saving ? '#A9A6BC' : 'var(--brand-navy)',
                 border: 'none', color: '#fff', fontSize: 13, fontWeight: 600,
                 display: 'flex', alignItems: 'center', gap: 6,
               }}
@@ -385,7 +386,7 @@ function AllUsersModal({ users, onClose }) {
       onClick={onClose}
       style={{
         position: 'fixed', inset: 0, zIndex: 500,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        background: 'rgba(40,39,64,0.4)', backdropFilter: 'blur(6px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
       }}
     >
@@ -399,28 +400,27 @@ function AllUsersModal({ users, onClose }) {
           width: 'min(540px, 100%)',
           maxHeight: '85vh',
           display: 'flex', flexDirection: 'column',
-          background: 'rgba(22, 27, 34, 0.96)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.08)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border-default)',
           borderRadius: 20,
           padding: 24,
-          color: '#e6edf3',
-          boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+          color: 'var(--brand-ink)',
+          boxShadow: 'var(--shadow-md)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <Users size={18} color="#00d4ff" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>All users (last 30 days)</h3>
-            <span style={{ fontSize: 12, color: '#8b949e' }}>({users.length})</span>
+            <Users size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>All users (last 30 days)</h3>
+            <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>({users.length})</span>
           </div>
           <button onClick={onClose} style={{
             width: 32, height: 32, borderRadius: 8, border: 'none', background: 'transparent',
-            color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}><X size={18} /></button>
         </div>
         {users.length === 0 ? (
-          <div style={{ padding: 32, textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+          <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
             No user activity in the last 30 days.
           </div>
         ) : (
@@ -433,17 +433,17 @@ function AllUsersModal({ users, onClose }) {
                   display: 'grid', gridTemplateColumns: '28px 1fr auto', gap: 10, alignItems: 'center',
                   padding: '8px 4px',
                 }}>
-                  <span style={{ fontSize: 11, color: '#8b949e', fontWeight: 600 }}>#{i + 1}</span>
+                  <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>#{i + 1}</span>
                   <div>
-                    <div style={{ fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>{u.name}</div>
-                    <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
-                      <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #00d4ff, #a855f7)' }} />
+                    <div style={{ fontSize: 13, color: 'var(--brand-ink)', marginBottom: 4 }}>{u.name}</div>
+                    <div style={{ height: 4, background: 'var(--bg-surface)', borderRadius: 2, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: 'var(--brand-navy)' }} />
                     </div>
                     {u.email && (
-                      <div style={{ fontSize: 10, color: '#484f58', marginTop: 4, fontFamily: 'monospace' }}>{u.email}</div>
+                      <div style={{ fontSize: 10, color: 'var(--text-dim)', marginTop: 4, fontFamily: 'monospace' }}>{u.email}</div>
                     )}
                   </div>
-                  <span style={{ fontSize: 14, color: '#e6edf3', fontWeight: 600 }}>{u.count}</span>
+                  <span style={{ fontSize: 14, color: 'var(--brand-ink)', fontWeight: 600 }}>{u.count}</span>
                 </div>
               );
             })}
@@ -491,23 +491,23 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
     <div style={{ ...cardStyle, gridColumn: '1 / -1' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Inbox size={18} color="#00d4ff" />
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Feedback Inbox</h3>
-          <span style={{ fontSize: 12, color: '#8b949e' }}>({filtered.length})</span>
+          <Inbox size={18} color="var(--brand-navy)" />
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Feedback Inbox</h3>
+          <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>({filtered.length})</span>
         </div>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {statuses.map((s) => {
             const active = statusFilter === s;
-            const c = STATUS_COLORS[s] || '#8b949e';
+            const c = STATUS_COLORS[s] || '#9AA0A6';
             return (
               <button
                 key={s}
                 onClick={() => setStatusFilter(s)}
                 style={{
                   padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 500, cursor: 'pointer',
-                  background: active ? `${c}25` : 'rgba(255,255,255,0.04)',
-                  border: `1px solid ${active ? `${c}50` : 'rgba(255,255,255,0.08)'}`,
-                  color: active ? c : '#e6edf3',
+                  background: active ? `${c}25` : 'var(--bg-surface)',
+                  border: `1px solid ${active ? `${c}50` : 'var(--border-default)'}`,
+                  color: active ? c : 'var(--brand-ink)',
                 }}
               >
                 {s}
@@ -518,7 +518,7 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
       </div>
 
       {filtered.length === 0 ? (
-        <div style={{ padding: 32, textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+        <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
           No feedback in this view yet.
         </div>
       ) : (
@@ -529,7 +529,7 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
             const meta = FEEDBACK_TYPE_META[type] || FEEDBACK_TYPE_META.Other;
             const Icon = meta.icon;
             const status = f.Status || 'New';
-            const statusColor = STATUS_COLORS[status] || '#8b949e';
+            const statusColor = STATUS_COLORS[status] || '#9AA0A6';
             const user = getItemUser(item);
             const created = parseDate(item.createdDateTime);
 
@@ -541,8 +541,8 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
                 style={{
                   padding: 14,
                   borderRadius: 12,
-                  background: 'rgba(0,0,0,0.2)',
-                  border: '1px solid rgba(255,255,255,0.05)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-default)',
                   display: 'grid',
                   gridTemplateColumns: 'auto 1fr auto',
                   gap: 12,
@@ -551,12 +551,12 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
                   transition: 'all 0.15s ease',
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(0,212,255,0.05)';
-                  e.currentTarget.style.borderColor = 'rgba(0,212,255,0.2)';
+                  e.currentTarget.style.background = 'rgba(65,60,96,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(65,60,96,0.2)';
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(0,0,0,0.2)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.background = 'var(--bg-surface)';
+                  e.currentTarget.style.borderColor = 'var(--border-default)';
                 }}
               >
                 <div style={{
@@ -571,19 +571,19 @@ function FeedbackInbox({ feedback, onRefresh, onCardClick }) {
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 4 }}>
                     <span style={{ fontSize: 11, color: meta.color, fontWeight: 600 }}>{type}</span>
-                    <span style={{ fontSize: 11, color: '#484f58' }}>·</span>
-                    <span style={{ fontSize: 11, color: '#8b949e' }}>{f.Page || '—'}</span>
-                    <span style={{ fontSize: 11, color: '#484f58' }}>·</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>·</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>{f.Page || '—'}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-dim)' }}>·</span>
                     <span style={{
                       fontSize: 10, padding: '2px 6px', borderRadius: 4,
-                      background: f.Severity === 'High' ? '#ff3d5a20' : f.Severity === 'Medium' ? '#ffab0020' : '#00e67620',
-                      color: f.Severity === 'High' ? '#ff3d5a' : f.Severity === 'Medium' ? '#ffab00' : '#00e676',
+                      background: f.Severity === 'High' ? '#E06B7A20' : f.Severity === 'Medium' ? '#FEA61420' : '#31D3AE20',
+                      color: f.Severity === 'High' ? '#E06B7A' : f.Severity === 'Medium' ? '#D98200' : '#2AA88C',
                     }}>{f.Severity || 'Medium'}</span>
                   </div>
-                  <div style={{ fontSize: 14, color: '#e6edf3', lineHeight: 1.4, marginBottom: 4 }}>
+                  <div style={{ fontSize: 14, color: 'var(--brand-ink)', lineHeight: 1.4, marginBottom: 4 }}>
                     {f.Description || '(no description)'}
                   </div>
-                  <div style={{ fontSize: 11, color: '#8b949e' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     {user.name} · {created ? format(created, 'MMM d, h:mm a') : '—'}
                   </div>
                 </div>
@@ -621,12 +621,12 @@ function ActivityFeed({ items }) {
   return (
     <div style={{ ...cardStyle }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-        <Activity size={18} color="#00e676" />
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Live Activity</h3>
-        <span style={{ fontSize: 11, color: '#8b949e' }}>(last 30 events)</span>
+        <Activity size={18} color="var(--brand-navy)" />
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Live Activity</h3>
+        <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>(last 30 events)</span>
       </div>
       {recent.length === 0 ? (
-        <div style={{ padding: 24, textAlign: 'center', color: '#8b949e', fontSize: 12 }}>
+        <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
           No activity to show.
         </div>
       ) : (
@@ -640,8 +640,8 @@ function ActivityFeed({ items }) {
                 style={{
                   display: 'grid', gridTemplateColumns: 'auto 1fr auto', gap: 10, alignItems: 'center',
                   padding: '8px 10px', borderRadius: 8,
-                  background: 'rgba(0,0,0,0.15)',
-                  border: '1px solid rgba(255,255,255,0.04)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-subtle)',
                 }}
               >
                 <div style={{
@@ -652,12 +652,12 @@ function ActivityFeed({ items }) {
                   <Icon size={13} color={meta.color} />
                 </div>
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, color: '#e6edf3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{ fontSize: 13, color: 'var(--brand-ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     <span style={{ color: meta.color, fontWeight: 600 }}>{meta.label}</span>
                     {' · '}
                     {evt.title}
                   </div>
-                  <div style={{ fontSize: 11, color: '#8b949e' }}>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
                     {evt.userName} · {evt.when ? format(evt.when, 'MMM d, h:mm a') : '—'}
                   </div>
                 </div>
@@ -666,7 +666,7 @@ function ActivityFeed({ items }) {
                     onClick={() => navigate(evt.navigateTo)}
                     style={{
                       width: 26, height: 26, borderRadius: 6, border: 'none', background: 'transparent',
-                      color: '#8b949e', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     }}
                     title="Go to list"
                   >
@@ -831,9 +831,9 @@ export default function Admin() {
   const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const maxHeat = Math.max(1, ...Object.values(analytics.heatmap));
   const heatColor = (n) => {
-    if (n === 0) return 'rgba(255,255,255,0.03)';
+    if (n === 0) return '#EEEEF0';
     const intensity = n / maxHeat;
-    return `rgba(0, 212, 255, ${0.15 + intensity * 0.7})`;
+    return `rgba(65, 60, 96, ${0.15 + intensity * 0.7})`;
   };
 
   return (
@@ -845,14 +845,14 @@ export default function Admin() {
         style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: '10px 16px', borderRadius: 12, marginBottom: 18,
-          background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)',
+          background: 'rgba(65,60,96,0.06)', border: '1px solid var(--border-default)',
         }}
       >
-        <ShieldCheck size={16} color="#a855f7" />
-        <span style={{ fontSize: 12, color: '#a855f7', fontWeight: 600 }}>
+        <ShieldCheck size={16} color="#7C76B8" />
+        <span style={{ fontSize: 12, color: '#7C76B8', fontWeight: 600 }}>
           ADMIN-ONLY
         </span>
-        <span style={{ fontSize: 12, color: '#8b949e' }}>
+        <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
           You're seeing data not visible to other staff. Logged in as {user?.email}.
         </span>
       </motion.div>
@@ -868,7 +868,7 @@ export default function Admin() {
           label="Active users (7d)"
           value={analytics.activeUsers7d}
           sublabel="Unique signed-in staff"
-          color="#00d4ff"
+          color="#413C60"
           delay={0}
         />
         <StatCard
@@ -876,7 +876,7 @@ export default function Admin() {
           label="Actions today"
           value={analytics.actionsToday}
           sublabel="Across all lists"
-          color="#00e676"
+          color="#31D3AE"
           delay={0.05}
         />
         <StatCard
@@ -884,7 +884,7 @@ export default function Admin() {
           label="New feedback"
           value={analytics.newFeedback}
           sublabel={`${analytics.totalFeedback} total submitted`}
-          color="#ff006e"
+          color="#FEA614"
           delay={0.1}
         />
         <StatCard
@@ -892,7 +892,7 @@ export default function Admin() {
           label="Top contributor"
           value={analytics.topUsers[0]?.name?.split(' ')[0] || '—'}
           sublabel={analytics.topUsers[0] ? `${analytics.topUsers[0].count} actions / 30d` : 'No activity yet'}
-          color="#a855f7"
+          color="#39C0E0"
           delay={0.15}
         />
       </div>
@@ -903,16 +903,16 @@ export default function Admin() {
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 14 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Users size={18} color="#00d4ff" />
-              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Top Users (30d)</h3>
+              <Users size={18} color="var(--brand-navy)" />
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Top Users (30d)</h3>
             </div>
             {analytics.allUsers.length > 10 && (
               <button
                 onClick={() => setShowAllUsers(true)}
                 style={{
                   padding: '5px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                  background: 'rgba(0,212,255,0.1)', border: '1px solid rgba(0,212,255,0.3)',
-                  color: '#00d4ff',
+                  background: 'var(--brand-navy)', border: '1px solid var(--brand-navy)',
+                  color: '#fff',
                 }}
               >
                 View all {analytics.allUsers.length}
@@ -920,7 +920,7 @@ export default function Admin() {
             )}
           </div>
           {analytics.topUsers.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center', color: '#8b949e', fontSize: 12 }}>
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
               No activity in the last 30 days.
             </div>
           ) : (
@@ -930,14 +930,14 @@ export default function Admin() {
                 const pct = (u.count / max) * 100;
                 return (
                   <div key={u.email} style={{ display: 'grid', gridTemplateColumns: '20px 1fr auto', gap: 10, alignItems: 'center' }}>
-                    <span style={{ fontSize: 11, color: '#8b949e', fontWeight: 600 }}>#{i + 1}</span>
+                    <span style={{ fontSize: 11, color: 'var(--text-muted)', fontWeight: 600 }}>#{i + 1}</span>
                     <div>
-                      <div style={{ fontSize: 13, color: '#e6edf3', marginBottom: 4 }}>{u.name}</div>
-                      <div style={{ height: 4, background: 'rgba(255,255,255,0.05)', borderRadius: 2, overflow: 'hidden' }}>
-                        <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #00d4ff, #a855f7)' }} />
+                      <div style={{ fontSize: 13, color: 'var(--brand-ink)', marginBottom: 4 }}>{u.name}</div>
+                      <div style={{ height: 4, background: 'var(--bg-surface)', borderRadius: 2, overflow: 'hidden' }}>
+                        <div style={{ width: `${pct}%`, height: '100%', background: 'var(--brand-navy)' }} />
                       </div>
                     </div>
-                    <span style={{ fontSize: 13, color: '#e6edf3', fontWeight: 600 }}>{u.count}</span>
+                    <span style={{ fontSize: 13, color: 'var(--brand-ink)', fontWeight: 600 }}>{u.count}</span>
                   </div>
                 );
               })}
@@ -948,11 +948,11 @@ export default function Admin() {
         {/* Activity by Department */}
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <ClipboardList size={18} color="#a855f7" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Supply Requests by Dept</h3>
+            <ClipboardList size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Supply Requests by Dept</h3>
           </div>
           {analytics.deptData.length === 0 ? (
-            <div style={{ padding: 24, textAlign: 'center', color: '#8b949e', fontSize: 12 }}>
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)', fontSize: 12 }}>
               No supply requests yet.
             </div>
           ) : (
@@ -969,10 +969,10 @@ export default function Admin() {
                   fontSize={11}
                 >
                   {analytics.deptData.map((_, i) => (
-                    <Cell key={i} fill={['#00d4ff', '#a855f7', '#00e676', '#ffab00', '#ff006e', '#26c6da'][i % 6]} />
+                    <Cell key={i} fill={CHART_PALETTE[i % CHART_PALETTE.length]} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: 8 }} />
+                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 8, color: 'var(--brand-ink)' }} />
               </PieChart>
             </ResponsiveContainer>
           )}
@@ -984,18 +984,18 @@ export default function Admin() {
         {/* Funnel */}
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <CheckCircle2 size={18} color="#00e676" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Supply Request Funnel</h3>
+            <CheckCircle2 size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Supply Request Funnel</h3>
           </div>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={analytics.funnelData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-              <XAxis dataKey="status" tick={{ fill: '#8b949e', fontSize: 10 }} />
-              <YAxis tick={{ fill: '#8b949e', fontSize: 11 }} />
-              <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: 8 }} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#EEEEF0" />
+              <XAxis dataKey="status" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
+              <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
+              <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 8, color: 'var(--brand-ink)' }} />
               <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                 {analytics.funnelData.map((entry, i) => (
-                  <Cell key={i} fill={['#ff3d5a', '#ffab00', '#a855f7', '#26c6da', '#00e676'][i]} />
+                  <Cell key={i} fill={['#E06B7A', '#FEA614', '#39C0E0', '#31D3AE', '#8792A0'][i]} />
                 ))}
               </Bar>
             </BarChart>
@@ -1005,23 +1005,23 @@ export default function Admin() {
         {/* Feedback by Type */}
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <MessageSquare size={18} color="#ff006e" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Feedback Breakdown</h3>
+            <MessageSquare size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Feedback Breakdown</h3>
           </div>
           {analytics.feedbackByType.length === 0 ? (
-            <div style={{ padding: 32, textAlign: 'center', color: '#8b949e', fontSize: 13 }}>
+            <div style={{ padding: 32, textAlign: 'center', color: 'var(--text-muted)', fontSize: 13 }}>
               No feedback yet. Click the 💬 button to send the first one!
             </div>
           ) : (
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={analytics.feedbackByType} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
-                <XAxis type="number" tick={{ fill: '#8b949e', fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: '#8b949e', fontSize: 11 }} width={110} />
-                <Tooltip contentStyle={{ background: '#0d1117', border: '1px solid #30363d', borderRadius: 8 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#EEEEF0" />
+                <XAxis type="number" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} width={110} />
+                <Tooltip contentStyle={{ background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 8, color: 'var(--brand-ink)' }} />
                 <Bar dataKey="value" radius={[0, 6, 6, 0]}>
                   {analytics.feedbackByType.map((entry, i) => (
-                    <Cell key={i} fill={FEEDBACK_TYPE_META[entry.name]?.color || '#8b949e'} />
+                    <Cell key={i} fill={FEEDBACK_TYPE_META[entry.name]?.color || '#9AA0A6'} />
                   ))}
                 </Bar>
               </BarChart>
@@ -1033,18 +1033,18 @@ export default function Admin() {
       {/* Heatmap */}
       <div style={{ ...cardStyle, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <Clock size={18} color="#ffab00" />
-          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Usage Heatmap (when staff are most active)</h3>
+          <Clock size={18} color="var(--brand-navy)" />
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>Usage Heatmap (when staff are most active)</h3>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'auto repeat(24, 1fr)', gap: 2, minWidth: 720 }}>
             <div />
             {Array.from({ length: 24 }).map((_, h) => (
-              <div key={h} style={{ fontSize: 9, color: '#484f58', textAlign: 'center' }}>{h}</div>
+              <div key={h} style={{ fontSize: 9, color: 'var(--text-dim)', textAlign: 'center' }}>{h}</div>
             ))}
             {dayLabels.map((day, d) => (
               <Fragment key={`row-${d}`}>
-                <div style={{ fontSize: 11, color: '#8b949e', display: 'flex', alignItems: 'center' }}>{day}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>{day}</div>
                 {Array.from({ length: 24 }).map((_, h) => {
                   const v = analytics.heatmap[`${d}-${h}`] || 0;
                   return (
@@ -1055,7 +1055,7 @@ export default function Admin() {
                         height: 22,
                         background: heatColor(v),
                         borderRadius: 3,
-                        border: '1px solid rgba(255,255,255,0.02)',
+                        border: '1px solid var(--border-subtle)',
                       }}
                     />
                   );
@@ -1071,10 +1071,10 @@ export default function Admin() {
         <ActivityFeed items={analytics.allActivities} />
         <div style={{ ...cardStyle }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-            <LayoutDashboard size={18} color="#26c6da" />
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>External Analytics</h3>
+            <LayoutDashboard size={18} color="var(--brand-navy)" />
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600, color: 'var(--brand-ink)' }}>External Analytics</h3>
           </div>
-          <p style={{ fontSize: 12, color: '#8b949e', marginTop: 0, marginBottom: 14 }}>
+          <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 0, marginBottom: 14 }}>
             Session replays, heatmaps, rage clicks, and JS errors live on Microsoft Clarity.
           </p>
           <a
@@ -1084,17 +1084,17 @@ export default function Admin() {
             style={{
               display: 'flex', alignItems: 'center', gap: 8,
               padding: '12px 16px', borderRadius: 10,
-              background: 'rgba(0,212,255,0.08)',
-              border: '1px solid rgba(0,212,255,0.25)',
-              color: '#00d4ff', textDecoration: 'none', fontSize: 13, fontWeight: 600,
+              background: 'var(--brand-navy)',
+              border: '1px solid var(--brand-navy)',
+              color: '#fff', textDecoration: 'none', fontSize: 13, fontWeight: 600,
               width: 'fit-content',
             }}
           >
             Open Clarity dashboard <ExternalLink size={14} />
           </a>
-          <div style={{ marginTop: 18, padding: 12, borderRadius: 10, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.04)' }}>
-            <div style={{ fontSize: 11, color: '#8b949e', marginBottom: 4 }}>What Clarity shows:</div>
-            <ul style={{ margin: 0, paddingLeft: 18, color: '#e6edf3', fontSize: 12, lineHeight: 1.7 }}>
+          <div style={{ marginTop: 18, padding: 12, borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
+            <div style={{ fontSize: 11, color: 'var(--text-muted)', marginBottom: 4 }}>What Clarity shows:</div>
+            <ul style={{ margin: 0, paddingLeft: 18, color: 'var(--brand-ink)', fontSize: 12, lineHeight: 1.7 }}>
               <li>Where users click most (heatmaps per page)</li>
               <li>Recorded sessions you can play back</li>
               <li>Rage clicks (frustration signal)</li>
@@ -1118,8 +1118,8 @@ export default function Admin() {
         <div style={{
           position: 'fixed', bottom: 24, left: 24, zIndex: 100,
           padding: '8px 14px', borderRadius: 8,
-          background: 'rgba(22,27,34,0.9)', border: '1px solid rgba(255,255,255,0.08)',
-          fontSize: 12, color: '#8b949e', display: 'flex', alignItems: 'center', gap: 8,
+          background: 'var(--bg-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-md)',
+          fontSize: 12, color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <Activity size={12} style={{ animation: 'spin 1s linear infinite' }} />
           Loading data…

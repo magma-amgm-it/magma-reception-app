@@ -28,21 +28,27 @@ import { useSharePointList } from '../hooks/useSharePointList';
 import { createSupplyRequest, updateSupplyRequest } from '../services/graphApi';
 
 const columns = [
-  { key: 'New', label: 'New', color: '#ff3d5a' },
-  { key: 'Received', label: 'Request received', color: '#ffab00' },
-  { key: 'Pending Order', label: 'Pending Order', color: '#f5c542' },
-  { key: 'Ready to Pick Up', label: 'Ready to Pick Up', color: '#00e676' },
-  { key: 'Completed', label: 'Completed', color: '#8b949e' },
+  { key: 'New', label: 'New', color: '#E06B7A' },
+  { key: 'Received', label: 'Request received', color: '#FEA614' },
+  { key: 'Pending Order', label: 'Pending Order', color: '#39C0E0' },
+  { key: 'Ready to Pick Up', label: 'Ready to Pick Up', color: '#31D3AE' },
+  { key: 'Completed', label: 'Completed', color: '#8792A0' },
 ];
 
 const departments = ['All', 'Reception', 'CELPIP', 'Administration', 'Kitchen', 'Settlement', 'Language', 'IT', 'Finance', 'HR', 'Facilities'];
 const deptChoices = departments.filter(d => d !== 'All');
 const urgencies = ['All', 'Urgent', 'Normal'];
 
-const urgencyColor = { Urgent: '#ff3d5a', Normal: '#00e676' };
+const urgencyColor = { Urgent: '#E05563', Normal: '#31D3AE' };
+// Official MAGMA service colour-coding (Brand Kit). Departments that map to a
+// MAGMA service get its brand colour; internal-only departments stay neutral navy.
 const deptColor = {
-  Reception: '#00d4ff', CELPIP: '#a855f7', Administration: '#ffab00', Kitchen: '#00e676',
-  Settlement: '#26a69a', Language: '#ff006e', IT: '#00b0ff', Finance: '#f5c542', HR: '#e040fb', Facilities: '#8b949e',
+  Settlement: '#31D3AE',     // Settlement/RAP → teal
+  Language: '#FEA614',       // Language School → orange
+  CELPIP: '#A4113A',         // CELPIP → maroon
+  Administration: '#413C60', // Administration / IT / Marketing → navy
+  IT: '#413C60',
+  Reception: '#413C60', Finance: '#413C60', HR: '#413C60', Facilities: '#413C60', Kitchen: '#413C60',
 };
 
 const fadeInUp = {
@@ -58,35 +64,35 @@ const f = {
   title: { fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between' },
   closeBtn: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' },
-  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none' },
-  textarea: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 90, outline: 'none', resize: 'vertical' },
+  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none', colorScheme: 'light', boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: 14, minHeight: 90, outline: 'none', resize: 'vertical' },
   group: { marginBottom: 20 },
   chips: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  chip: (active, color = '#00d4ff') => ({ padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer', border: 'none', transition: 'all 0.2s', background: active ? color + '20' : 'rgba(255,255,255,0.04)', color: active ? color : 'var(--text-muted)', borderWidth: 1, borderStyle: 'solid', borderColor: active ? color + '50' : 'var(--glass-border)' }),
-  submitBtn: (loading, success) => ({ width: '100%', padding: 16, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, background: loading ? 'rgba(0,212,255,0.1)' : success ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #0090b3 100%)', color: loading ? '#00d4ff' : success ? '#00e676' : '#0a0a0f' }),
-  error: { color: '#ff3d5a', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  chip: (active, color = '#413C60') => ({ padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer', border: 'none', transition: 'all 0.2s', background: active ? color + '22' : 'var(--bg-surface)', color: active ? 'var(--brand-ink)' : 'var(--text-muted)', borderWidth: 1, borderStyle: 'solid', borderColor: active ? color : 'var(--border-default)' }),
+  submitBtn: (loading, success) => ({ width: '100%', padding: 16, borderRadius: 10, border: 'none', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, background: loading ? '#8681A5' : success ? 'rgba(87,193,165,0.2)' : 'var(--brand-navy)', color: loading ? '#fff' : success ? '#3E9E85' : '#fff' }),
+  error: { color: '#E05563', fontSize: 13, textAlign: 'center', marginTop: 8 },
 };
 
 const s = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-4)' },
-  newBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, #00d4ff 0%, #0090b3 100%)', color: '#0a0a0f', fontWeight: 700, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48, border: 'none' },
+  newBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'var(--brand-navy)', color: '#fff', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48, border: 'none' },
   filterBar: { display: 'flex', gap: 'var(--space-3)', marginBottom: 'var(--space-6)', flexWrap: 'wrap', alignItems: 'center' },
   filterIcon: { display: 'flex', alignItems: 'center', gap: 4, color: 'var(--text-muted)', fontSize: 'var(--text-sm)' },
-  select: { padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 'var(--text-sm)', minHeight: 40, cursor: 'pointer', appearance: 'auto' },
+  select: { padding: 'var(--space-2) var(--space-4)', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: 'var(--text-sm)', minHeight: 40, cursor: 'pointer', appearance: 'auto', colorScheme: 'light' },
   board: { display: 'grid', gridTemplateColumns: 'repeat(5, minmax(220px, 1fr))', gap: 'var(--space-4)', overflowX: 'auto', paddingBottom: 'var(--space-4)' },
   column: { display: 'flex', flexDirection: 'column', gap: 'var(--space-3)', minHeight: 300 },
-  colHeader: (color) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-md)', background: color + '12', borderLeft: `3px solid ${color}`, marginBottom: 'var(--space-2)' }),
-  colName: { fontWeight: 600, fontSize: 'var(--text-sm)', color: 'var(--text-primary)' },
-  colCount: (color) => ({ background: color + '25', color, padding: '2px 10px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 700 }),
-  card: { background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', cursor: 'grab', touchAction: 'none' },
-  cardDragging: { background: 'var(--bg-card)', border: '1px solid rgba(0,212,255,0.4)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', boxShadow: '0 12px 40px rgba(0,0,0,0.6)', opacity: 0.95 },
-  cardTitle: { fontWeight: 600, fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)', color: 'var(--text-primary)' },
+  colHeader: (color) => ({ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-md)', background: color, marginBottom: 'var(--space-2)', boxShadow: `0 3px 10px ${color}55` }),
+  colName: { fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 'var(--text-sm)', color: '#fff', letterSpacing: '0.2px' },
+  colCount: () => ({ background: 'rgba(255,255,255,0.28)', color: '#fff', padding: '2px 10px', borderRadius: 'var(--radius-full)', fontSize: 'var(--text-xs)', fontWeight: 700 }),
+  card: { background: 'rgba(132,124,186,0.10)', border: '1px solid rgba(132,124,186,0.24)', borderLeft: '3px solid var(--brand-navy)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-sm)', padding: 'var(--space-4)', cursor: 'grab', touchAction: 'none' },
+  cardDragging: { background: 'rgba(132,124,186,0.16)', border: '1px solid var(--brand-navy)', borderLeft: '3px solid var(--brand-navy)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', boxShadow: 'var(--shadow-md)', opacity: 0.97 },
+  cardTitle: { fontWeight: 600, fontSize: 'var(--text-sm)', marginBottom: 'var(--space-2)', color: 'var(--brand-ink)' },
   cardRow: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', marginBottom: 'var(--space-1)', fontSize: 'var(--text-xs)', color: 'var(--text-muted)' },
-  cardBadge: (color) => ({ display: 'inline-block', padding: '1px 8px', borderRadius: 'var(--radius-full)', background: color + '20', color, fontSize: '10px', fontWeight: 600 }),
+  cardBadge: (color) => ({ display: 'inline-block', padding: '3px 9px', borderRadius: 'var(--radius-full)', background: color, color: '#fff', fontSize: '10px', fontWeight: 700 }),
   cardFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'var(--space-3)' },
   loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: 'var(--text-muted)' },
-  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#ff3d5a' },
-  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(255,61,90,0.15)', border: '1px solid rgba(255,61,90,0.3)', color: '#ff3d5a', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
+  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#E05563' },
+  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(241,98,120,0.12)', border: '1px solid rgba(241,98,120,0.3)', color: '#E05563', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
   dropHint: { fontSize: 10, color: 'var(--text-dim)', textAlign: 'center', marginBottom: 12 },
 };
 
@@ -140,8 +146,8 @@ function DraggableCard({ card }) {
       </div>
       <div style={s.cardRow}><User size={12} />{card.requester}</div>
       <div style={s.cardFooter}>
-        <span style={s.cardBadge(deptColor[card.department] || '#8b949e')}>{card.department}</span>
-        <span style={s.cardBadge(urgencyColor[card.urgency] || '#8b949e')}>{card.urgency}</span>
+        <span style={s.cardBadge(deptColor[card.department] || '#8792A0')}>{card.department}</span>
+        <span style={s.cardBadge(urgencyColor[card.urgency] || '#8792A0')}>{card.urgency}</span>
       </div>
       <div style={{ ...s.cardRow, marginTop: 8, marginBottom: 0 }}><Calendar size={11} />{card.date}</div>
     </div>
@@ -156,8 +162,8 @@ function CardOverlay({ card }) {
       <div style={s.cardTitle}>{card.title}</div>
       <div style={s.cardRow}><User size={12} />{card.requester}</div>
       <div style={s.cardFooter}>
-        <span style={s.cardBadge(deptColor[card.department] || '#8b949e')}>{card.department}</span>
-        <span style={s.cardBadge(urgencyColor[card.urgency] || '#8b949e')}>{card.urgency}</span>
+        <span style={s.cardBadge(deptColor[card.department] || '#8792A0')}>{card.department}</span>
+        <span style={s.cardBadge(urgencyColor[card.urgency] || '#8792A0')}>{card.urgency}</span>
       </div>
     </div>
   );
@@ -307,7 +313,7 @@ export default function SupplyRequests() {
         {/* Header */}
         <motion.div style={s.header} variants={fadeInUp} custom={0}>
           <motion.button style={s.newBtn}
-            whileHover={{ scale: 1.04, boxShadow: '0 0 20px rgba(0,212,255,0.4)' }}
+            whileHover={{ scale: 1.04, boxShadow: 'var(--shadow-md)' }}
             whileTap={{ scale: 0.96 }}
             onClick={() => setShowForm(true)}>
             <PlusCircle size={18} /> New Request
@@ -318,10 +324,10 @@ export default function SupplyRequests() {
         <motion.div style={s.filterBar} variants={fadeInUp} custom={1}>
           <span style={s.filterIcon}><Filter size={14} /> Filters</span>
           <select style={s.select} value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)}>
-            {departments.map((d) => <option key={d} value={d} style={{ background: '#161b22' }}>{d === 'All' ? 'All Departments' : d}</option>)}
+            {departments.map((d) => <option key={d} value={d} style={{ background: 'var(--bg-card)' }}>{d === 'All' ? 'All Departments' : d}</option>)}
           </select>
           <select style={s.select} value={urgencyFilter} onChange={(e) => setUrgencyFilter(e.target.value)}>
-            {urgencies.map((u) => <option key={u} value={u} style={{ background: '#161b22' }}>{u === 'All' ? 'All Urgencies' : u}</option>)}
+            {urgencies.map((u) => <option key={u} value={u} style={{ background: 'var(--bg-card)' }}>{u === 'All' ? 'All Urgencies' : u}</option>)}
           </select>
         </motion.div>
 
@@ -340,9 +346,9 @@ export default function SupplyRequests() {
                       {updating === card.id && (
                         <div style={{
                           position: 'absolute', inset: 0, borderRadius: 'var(--radius-md)',
-                          background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'rgba(252,252,251,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
-                          <Loader2 size={18} color="#00d4ff" style={{ animation: 'spin 1s linear infinite' }} />
+                          <Loader2 size={18} color="#413C60" style={{ animation: 'spin 1s linear infinite' }} />
                         </div>
                       )}
                     </div>

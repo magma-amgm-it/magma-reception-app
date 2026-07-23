@@ -24,11 +24,11 @@ import { useSharePointList } from '../hooks/useSharePointList';
 import { createPurchaseOrder, updatePurchaseOrder, deletePurchaseOrder, getVendorChoices, addVendorChoice } from '../services/graphApi';
 
 const statusColor = {
-  Ordered: '#00d4ff',
-  Shipped: '#ffab00',
-  Received: '#00e676',
-  Delegated: '#a855f7',
-  Cancelled: '#ff3d5a',
+  Ordered: '#39C0E0',
+  Shipped: '#FEA614',
+  Received: '#31D3AE',
+  Delegated: '#7C76B8',
+  Cancelled: '#E06B7A',
 };
 
 const FALLBACK_VENDORS = ['Amazon', 'Instacart', 'MCS', 'Denis', 'Walmart', 'Superstore', 'Dollarama', 'Ikea', 'Other'];
@@ -67,48 +67,48 @@ const f = {
   },
   closeBtn: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4 },
   label: { display: 'block', fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', marginBottom: 8, textTransform: 'uppercase', letterSpacing: '0.05em' },
-  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none', colorScheme: 'dark', boxSizing: 'border-box' },
-  textarea: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, minHeight: 70, outline: 'none', resize: 'vertical' },
+  input: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: 14, minHeight: 48, outline: 'none', colorScheme: 'light', boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '12px 16px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--text-primary)', fontSize: 14, minHeight: 70, outline: 'none', resize: 'vertical' },
   selectRow: { display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' },
-  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 },
+  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #FEA61480', background: 'transparent', color: '#D98200', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', minHeight: 48 },
   group: { marginBottom: 20 },
   row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 20 },
   chips: { display: 'flex', flexWrap: 'wrap', gap: 8 },
-  chip: (active, color = '#00d4ff') => ({
-    padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+  chip: (active, color = '#413C60') => ({
+    padding: '8px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
     cursor: 'pointer', border: 'none', transition: 'all 0.2s',
-    background: active ? color + '20' : 'rgba(255,255,255,0.04)',
-    color: active ? color : 'var(--text-muted)',
+    background: active ? color : 'var(--bg-surface)',
+    color: active ? '#fff' : 'var(--text-muted)',
     borderWidth: 1, borderStyle: 'solid',
-    borderColor: active ? color + '50' : 'var(--glass-border)',
+    borderColor: active ? color : 'var(--border-default)',
   }),
   submitBtn: (loading, success) => ({
     width: '100%', padding: 16, borderRadius: 10, border: 'none',
-    fontWeight: 700, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer',
+    fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 16, cursor: loading ? 'not-allowed' : 'pointer',
     minHeight: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8,
-    background: loading ? 'rgba(0,212,255,0.1)' : success ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #0090b3 100%)',
-    color: loading ? '#00d4ff' : success ? '#00e676' : '#0a0a0f',
+    background: loading ? '#8681A5' : success ? 'rgba(87,193,165,0.2)' : 'var(--brand-navy)',
+    color: loading ? '#fff' : success ? '#3E9E85' : '#fff',
   }),
-  error: { color: '#ff3d5a', fontSize: 13, textAlign: 'center', marginTop: 8 },
+  error: { color: '#E05563', fontSize: 13, textAlign: 'center', marginTop: 8 },
 };
 
 const s = {
   header: { display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 'var(--space-6)', flexWrap: 'wrap', gap: 'var(--space-4)' },
-  newBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'linear-gradient(135deg, #00d4ff 0%, #0090b3 100%)', color: '#0a0a0f', fontWeight: 700, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48, border: 'none' },
+  newBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'var(--brand-navy)', color: '#fff', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48, border: 'none' },
   summaryRow: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 'var(--space-5)', marginBottom: 'var(--space-8)' },
-  summaryCard: { background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' },
-  summaryIconWrap: (color) => ({ width: 44, height: 44, borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: color + '15', flexShrink: 0 }),
-  summaryValue: (color) => ({ fontSize: '1.5rem', fontWeight: 700, color, lineHeight: 1 }),
-  summaryLabel: { fontSize: 'var(--text-xs)', color: 'var(--text-muted)', marginTop: 2 },
-  tableWrap: { background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' },
+  summaryCard: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', padding: 'var(--space-5)', display: 'flex', alignItems: 'center', gap: 'var(--space-4)' },
+  summaryIconWrap: (color) => ({ width: 44, height: 44, borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: color, flexShrink: 0 }),
+  summaryValue: { fontFamily: 'var(--font-head)', fontSize: '1.9rem', fontWeight: 700, color: 'var(--brand-ink)', lineHeight: 1, letterSpacing: '-0.5px' },
+  summaryLabel: { fontSize: 'var(--text-xs)', fontWeight: 600, color: 'var(--text-muted)', marginTop: 6 },
+  tableWrap: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-sm)', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: 'var(--text-sm)' },
-  th: { textAlign: 'left', padding: 'var(--space-4) var(--space-5)', color: 'var(--text-muted)', fontWeight: 600, fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '1px solid var(--border-default)', whiteSpace: 'nowrap' },
-  td: { padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--border-subtle)', verticalAlign: 'middle' },
-  statusBadge: (color) => ({ display: 'inline-block', padding: '3px 12px', borderRadius: 'var(--radius-full)', background: color + '18', color, fontSize: 'var(--text-xs)', fontWeight: 600 }),
-  cost: { fontWeight: 600, color: 'var(--text-primary)', fontVariantNumeric: 'tabular-nums' },
+  th: { textAlign: 'left', padding: 'var(--space-4) var(--space-5)', color: 'var(--text-muted)', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 'var(--text-xs)', textTransform: 'uppercase', letterSpacing: '0.05em', borderBottom: '2px solid var(--border-default)', whiteSpace: 'nowrap' },
+  td: { padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--border-subtle)', verticalAlign: 'middle', color: 'var(--brand-ink)' },
+  statusBadge: (color) => ({ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '4px 12px', borderRadius: 'var(--radius-full)', background: color, color: '#fff', fontSize: 'var(--text-xs)', fontWeight: 700 }),
+  cost: { fontWeight: 700, color: 'var(--brand-ink)', fontVariantNumeric: 'tabular-nums' },
   loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: 'var(--text-muted)' },
-  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#ff3d5a' },
-  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(255,61,90,0.15)', border: '1px solid rgba(255,61,90,0.3)', color: '#ff3d5a', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
+  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#E05563' },
+  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(241,98,120,0.12)', border: '1px solid rgba(241,98,120,0.3)', color: '#E05563', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
 };
 
 function formatDate(dateStr) {
@@ -193,9 +193,9 @@ const ff = {
     fontWeight: 600,
     cursor: 'pointer',
     border: '1px solid',
-    borderColor: active ? '#00d4ff' : 'var(--glass-border)',
-    background: active ? 'rgba(0,212,255,0.15)' : 'transparent',
-    color: active ? '#00d4ff' : 'var(--text-muted)',
+    borderColor: active ? 'var(--brand-navy)' : 'var(--border-default)',
+    background: active ? 'var(--brand-navy)' : 'var(--bg-card)',
+    color: active ? '#fff' : 'var(--text-muted)',
     transition: 'all 0.15s',
   }),
   dropdownsRow: {
@@ -214,7 +214,7 @@ const ff = {
     fontSize: 13,
     outline: 'none',
     cursor: 'pointer',
-    colorScheme: 'dark',
+    colorScheme: 'light',
     minHeight: 40,
   },
   activeFilterNote: {
@@ -493,9 +493,9 @@ export default function PurchaseOrders() {
   const hasActiveFilter = search || timePreset !== 'all' || statusFilter !== 'all' || vendorFilter !== 'all' || deptFilter !== 'all';
 
   const summaryCards = [
-    { label: hasActiveFilter ? 'Matching Orders' : 'Total Orders', value: filteredOrders.length, icon: ShoppingCart, color: '#00d4ff' },
-    { label: hasActiveFilter ? 'Filtered Spend' : 'Total Spend', value: `$${totalSpend.toFixed(2)}`, icon: DollarSign, color: '#00e676' },
-    { label: 'Pending', value: pendingCount, icon: Clock, color: '#ffab00' },
+    { label: hasActiveFilter ? 'Matching Orders' : 'Total Orders', value: filteredOrders.length, icon: ShoppingCart, color: '#413C60' },
+    { label: hasActiveFilter ? 'Filtered Spend' : 'Total Spend', value: `$${totalSpend.toFixed(2)}`, icon: DollarSign, color: '#31D3AE' },
+    { label: 'Pending', value: pendingCount, icon: Clock, color: '#FEA614' },
   ];
 
   const clearFilters = () => {
@@ -533,7 +533,7 @@ export default function PurchaseOrders() {
         {/* Header */}
         <motion.div style={s.header} variants={fadeInUp} custom={0}>
           <motion.button style={s.newBtn}
-            whileHover={{ scale: 1.04, boxShadow: '0 0 20px rgba(0,212,255,0.4)' }}
+            whileHover={{ scale: 1.03, boxShadow: '0 6px 18px rgba(254,166,20,0.35)' }}
             whileTap={{ scale: 0.96 }}
             onClick={() => setShowForm(true)}
           >
@@ -547,10 +547,10 @@ export default function PurchaseOrders() {
             const Icon = card.icon;
             return (
               <motion.div key={card.label} style={s.summaryCard} variants={fadeInUp} custom={1 + i}
-                whileHover={{ scale: 1.03, boxShadow: `0 0 16px ${card.color}25` }}>
-                <div style={s.summaryIconWrap(card.color)}><Icon size={22} color={card.color} /></div>
+                whileHover={{ y: -2, boxShadow: 'var(--shadow-md)' }}>
+                <div style={s.summaryIconWrap(card.color)}><Icon size={22} color="#fff" /></div>
                 <div>
-                  <div style={s.summaryValue(card.color)}>{card.value}</div>
+                  <div style={s.summaryValue}>{card.value}</div>
                   <div style={s.summaryLabel}>{card.label}</div>
                 </div>
               </motion.div>
@@ -655,7 +655,7 @@ export default function PurchaseOrders() {
                 <motion.tr
                   key={order.id}
                   style={{ cursor: 'pointer' }}
-                  whileHover={{ backgroundColor: 'rgba(0,212,255,0.06)' }}
+                  whileHover={{ backgroundColor: 'rgba(64,58,96,0.04)' }}
                   transition={{ duration: 0.15 }}
                   onClick={() => handleOpenEdit(order)}
                   title="Click to edit this order"
@@ -669,7 +669,7 @@ export default function PurchaseOrders() {
                   <td style={s.td}>{order.item}</td>
                   <td style={s.td}>{order.vendor}</td>
                   <td style={{ ...s.td, color: 'var(--text-muted)' }}>{order.department}</td>
-                  <td style={s.td}><span style={s.statusBadge(statusColor[order.status] || '#8b949e')}>{order.status}</span></td>
+                  <td style={s.td}><span style={s.statusBadge(statusColor[order.status] || '#8792A0')}>{order.status}</span></td>
                   <td style={{ ...s.td, ...s.cost }}>${(order.cost || 0).toFixed(2)}</td>
                   <td style={{ ...s.td, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{order.dateOrdered}</td>
                   <td style={{ ...s.td, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{order.expectedDelivery}</td>
@@ -735,7 +735,7 @@ export default function PurchaseOrders() {
                       onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewVendor(); } }}
                     />
                     <button type="button"
-                      style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
+                      style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
                       onClick={handleAddNewVendor} disabled={addingVendor}>
                       {addingVendor ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                     </button>
@@ -805,7 +805,7 @@ export default function PurchaseOrders() {
             <motion.div style={f.modal} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}>
               <div style={f.title}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Pencil size={18} color="#00d4ff" />
+                  <Pencil size={18} color="#FEA614" />
                   Edit Purchase Order
                 </span>
                 <button style={f.closeBtn} onClick={handleCloseEdit} disabled={savingEdit || deletingOrder}><X size={20} /></button>

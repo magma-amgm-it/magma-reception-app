@@ -33,12 +33,12 @@ import { QR_PREFIX } from '../components/Inventory/QRSheet';
 import { QRCodeSVG } from 'qrcode.react';
 
 const categoryColor = {
-  'Office Supplies': '#00d4ff',
-  'Kitchen/Break Room': '#00e676',
-  Cleaning: '#26a69a',
-  Bathroom: '#a855f7',
-  CELPIP: '#26c6da',
-  Other: '#8b949e',
+  'Office Supplies': '#39C0E0',
+  'Kitchen/Break Room': '#31D3AE',
+  Cleaning: '#BFD330',
+  Bathroom: '#7C76B8',
+  CELPIP: '#FEA614',
+  Other: '#525366',
 };
 
 const fadeInUp = {
@@ -48,10 +48,10 @@ const fadeInUp = {
 const stagger = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } };
 
 function getStockColor(quantity, threshold) {
-  if (!threshold || threshold === 0) return '#00e676';
-  if (quantity <= threshold * 0.3) return '#ff3d5a';
-  if (quantity <= threshold * 0.7) return '#ffab00';
-  return '#00e676';
+  if (!threshold || threshold === 0) return '#31D3AE';
+  if (quantity <= threshold * 0.3) return '#E06B7A';
+  if (quantity <= threshold * 0.7) return '#FEA614';
+  return '#31D3AE';
 }
 
 function getStockPercent(quantity, threshold) {
@@ -63,51 +63,51 @@ const s = {
   controlsRow: { display: 'flex', gap: 'var(--space-4)', marginBottom: 'var(--space-6)', flexWrap: 'wrap', alignItems: 'center' },
   searchWrap: { flex: 1, minWidth: 220, position: 'relative' },
   searchIcon: { position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', pointerEvents: 'none' },
-  searchInput: { width: '100%', padding: 'var(--space-3) var(--space-4) var(--space-3) 42px', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 'var(--text-md)', minHeight: 48, outline: 'none' },
-  modeToggle: { display: 'flex', gap: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--glass-border)' },
-  modeBtn: (active, color) => ({ padding: 'var(--space-3) var(--space-6)', background: active ? color + '20' : 'rgba(255,255,255,0.03)', color: active ? color : 'var(--text-muted)', fontWeight: 700, fontSize: 'var(--text-sm)', cursor: 'pointer', border: 'none', minHeight: 48, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', transition: 'all 0.2s' }),
-  actionBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48 },
+  searchInput: { width: '100%', padding: 'var(--space-3) var(--space-4) var(--space-3) 42px', borderRadius: 'var(--radius-md)', background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--brand-ink)', fontSize: 'var(--text-md)', minHeight: 48, outline: 'none', colorScheme: 'light' },
+  modeToggle: { display: 'flex', gap: 0, borderRadius: 'var(--radius-md)', overflow: 'hidden', border: '1px solid var(--border-default)' },
+  modeBtn: (active, color) => ({ padding: 'var(--space-3) var(--space-6)', background: active ? color : 'var(--bg-card)', color: active ? '#fff' : 'var(--text-muted)', fontWeight: 700, fontSize: 'var(--text-sm)', cursor: 'pointer', border: 'none', minHeight: 48, display: 'flex', alignItems: 'center', gap: 'var(--space-2)', transition: 'all 0.2s' }),
+  actionBtn: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', border: '1px solid var(--border-default)', color: 'var(--brand-navy)', fontWeight: 600, fontSize: 'var(--text-sm)', cursor: 'pointer', minHeight: 48 },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--space-4)' },
-  card: { background: 'var(--glass-bg)', backdropFilter: 'blur(var(--glass-blur))', border: '1px solid var(--glass-border)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', position: 'relative', overflow: 'hidden', cursor: 'pointer' },
+  card: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', boxShadow: 'var(--shadow-sm)', borderRadius: 'var(--radius-lg)', padding: 'var(--space-4)', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)', position: 'relative', overflow: 'hidden', cursor: 'pointer' },
   cardHeaderRow: { display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 },
-  cardName: { fontSize: 'var(--text-md)', fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.3, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
-  catBadge: (color) => ({ display: 'inline-block', padding: '2px 8px', borderRadius: 'var(--radius-full)', background: color + '18', color, fontSize: '10px', fontWeight: 600, alignSelf: 'flex-start' }),
+  cardName: { fontSize: 'var(--text-md)', fontWeight: 700, color: 'var(--brand-ink)', lineHeight: 1.3, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' },
+  catBadge: (color) => ({ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '2px 8px', borderRadius: 'var(--radius-full)', background: color, color: '#fff', fontSize: '10px', fontWeight: 700, alignSelf: 'flex-start' }),
   qtyRow: { display: 'flex', alignItems: 'baseline', gap: 'var(--space-2)' },
-  qtyNumber: (color) => ({ fontSize: '1.8rem', fontWeight: 800, color, lineHeight: 1 }),
+  qtyNumber: (color) => ({ fontFamily: 'var(--font-head)', fontSize: '1.8rem', fontWeight: 800, color, lineHeight: 1 }),
   qtyLabel: { fontSize: '10px', color: 'var(--text-muted)' },
-  progressTrack: { width: '100%', height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' },
+  progressTrack: { width: '100%', height: 4, borderRadius: 2, background: '#EEEEF0', overflow: 'hidden' },
   progressFill: (percent, color) => ({ width: `${percent}%`, height: '100%', borderRadius: 2, background: color, transition: 'width 0.5s ease' }),
-  lowBadge: { padding: '2px 8px', borderRadius: 'var(--radius-full)', background: 'rgba(255,61,90,0.18)', color: '#ff3d5a', fontSize: '9px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, whiteSpace: 'nowrap', border: '1px solid rgba(255,61,90,0.35)' },
+  lowBadge: { padding: '2px 8px', borderRadius: 'var(--radius-full)', background: '#E06B7A', color: '#fff', fontSize: '9px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 3, flexShrink: 0, whiteSpace: 'nowrap', border: 'none' },
   // ── Group headers ──
-  groupHeader: { display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)', margin: 'var(--space-6) 0 var(--space-3) 0', background: 'rgba(255,255,255,0.03)', borderRadius: 'var(--radius-md)', border: '1px solid var(--glass-border)', cursor: 'pointer', userSelect: 'none' },
+  groupHeader: (color) => ({ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', padding: 'var(--space-3) var(--space-4)', margin: 'var(--space-6) 0 var(--space-3) 0', background: color, boxShadow: `0 3px 10px ${color}55`, borderRadius: 'var(--radius-md)', border: 'none', cursor: 'pointer', userSelect: 'none' }),
   groupHeaderFirst: { marginTop: 0 },
-  groupHeaderTitle: { fontSize: 'var(--text-md)', fontWeight: 700, color: 'var(--text-primary)', flex: 1, display: 'flex', alignItems: 'center', gap: 8 },
-  groupHeaderCount: { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(0,212,255,0.12)', color: '#00d4ff' },
-  groupHeaderLowCount: { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(255,61,90,0.15)', color: '#ff3d5a' },
-  groupChevron: { color: 'var(--text-muted)', transition: 'transform 0.2s' },
+  groupHeaderTitle: { fontFamily: 'var(--font-head)', fontSize: 'var(--text-md)', fontWeight: 700, color: '#fff', flex: 1, display: 'flex', alignItems: 'center', gap: 8 },
+  groupHeaderCount: { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.28)', color: '#fff' },
+  groupHeaderLowCount: { fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 'var(--radius-full)', background: 'rgba(255,255,255,0.28)', color: '#fff' },
+  groupChevron: { color: '#fff', transition: 'transform 0.2s' },
   // ── Quick filter chips ──
   filterRow: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', marginBottom: 'var(--space-4)' },
   filterLabel: { fontSize: 11, fontWeight: 700, color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: 0.5, marginRight: 4 },
-  filterChip: (active, color = '#00d4ff') => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--glass-border)', background: active ? color + '18' : 'transparent', color: active ? color : 'var(--text-muted)', transition: 'all 0.15s' }),
-  filterSelect: { padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', outline: 'none', cursor: 'pointer', minWidth: 140 },
+  filterChip: (active, color = '#413C60') => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--border-default)', background: active ? color : 'var(--bg-card)', color: active ? '#fff' : 'var(--text-muted)', transition: 'all 0.15s' }),
+  filterSelect: { padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--brand-ink)', outline: 'none', cursor: 'pointer', minWidth: 140, colorScheme: 'light' },
   vendorBadge: { fontSize: 'var(--text-xs)', color: 'var(--text-dim)', marginTop: 'auto' },
   loadingWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: 'var(--text-muted)' },
-  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#ff3d5a' },
-  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(255,61,90,0.15)', border: '1px solid rgba(255,61,90,0.3)', color: '#ff3d5a', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
+  errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#E05563' },
+  retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(224,85,99,0.12)', border: '1px solid rgba(224,85,99,0.3)', color: '#E05563', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
 };
 
 // ─── Modal styles ───
 const m = {
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 },
-  modal: { background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 32, width: '100%', maxWidth: 400, position: 'relative', textAlign: 'center' },
-  title: { fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 },
+  modal: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 16, padding: 32, width: '100%', maxWidth: 400, position: 'relative', textAlign: 'center' },
+  title: { fontSize: 18, fontWeight: 700, color: 'var(--brand-ink)', marginBottom: 8 },
   subtitle: { fontSize: 13, color: 'var(--text-muted)', marginBottom: 24 },
   closeBtn: { position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' },
   stepper: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20, marginBottom: 24 },
-  stepBtn: { width: 48, height: 48, borderRadius: 12, background: 'rgba(255,255,255,0.06)', border: '1px solid var(--glass-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-primary)' },
-  stepNum: (color) => ({ fontSize: 40, fontWeight: 800, color, minWidth: 60, textAlign: 'center', lineHeight: 1 }),
-  confirmBtn: (loading, success, color) => ({ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: loading ? color + '15' : success ? 'rgba(0,230,118,0.2)' : color + '20', color: success ? '#00e676' : color, borderWidth: 1, borderStyle: 'solid', borderColor: success ? 'rgba(0,230,118,0.4)' : color + '40' }),
-  error: { color: '#ff3d5a', fontSize: 13, marginBottom: 12 },
+  stepBtn: { width: 48, height: 48, borderRadius: 12, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--brand-ink)' },
+  stepNum: (color) => ({ fontFamily: 'var(--font-head)', fontSize: 40, fontWeight: 800, color, minWidth: 60, textAlign: 'center', lineHeight: 1 }),
+  confirmBtn: (loading, success, color) => ({ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, background: loading ? color + '99' : success ? 'rgba(87,193,165,0.2)' : color, color: success ? '#3E9E85' : '#fff', borderWidth: 1, borderStyle: 'solid', borderColor: success ? 'rgba(87,193,165,0.4)' : color }),
+  error: { color: '#E05563', fontSize: 13, marginBottom: 12 },
   currentQty: { fontSize: 13, color: 'var(--text-dim)', marginBottom: 16 },
 };
 
@@ -117,10 +117,10 @@ const sc = {
   header: { position: 'absolute', top: 0, left: 0, right: 0, padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', zIndex: 10 },
   title: { color: '#fff', fontSize: 16, fontWeight: 700 },
   closeBtn: { background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, padding: '8px 16px', color: '#fff', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 },
-  viewfinder: { width: 280, height: 280, borderRadius: 16, overflow: 'hidden', border: '2px solid rgba(0,212,255,0.4)', boxShadow: '0 0 40px rgba(0,212,255,0.15)' },
-  hint: { color: 'var(--text-muted)', fontSize: 13, marginTop: 20, textAlign: 'center' },
-  errorMsg: { color: '#ff3d5a', fontSize: 14, marginTop: 16, textAlign: 'center', maxWidth: 300 },
-  successMsg: { color: '#00e676', fontSize: 14, fontWeight: 600, marginTop: 16 },
+  viewfinder: { width: 280, height: 280, borderRadius: 16, overflow: 'hidden', border: '2px solid rgba(254,166,20,0.6)', boxShadow: '0 0 40px rgba(254,166,20,0.18)' },
+  hint: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginTop: 20, textAlign: 'center' },
+  errorMsg: { color: '#E06B7A', fontSize: 14, marginTop: 16, textAlign: 'center', maxWidth: 300 },
+  successMsg: { color: '#31D3AE', fontSize: 14, fontWeight: 600, marginTop: 16 },
 };
 
 const SCANNER_ID = 'magma-inv-scanner';
@@ -128,30 +128,30 @@ const SCANNER_ID = 'magma-inv-scanner';
 // ─── Create form styles ───
 const cr = {
   overlay: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20, overflow: 'auto' },
-  modal: { background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, position: 'relative', maxHeight: '90vh', overflowY: 'auto' },
-  title: { fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 4 },
+  modal: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 16, padding: 28, width: '100%', maxWidth: 560, position: 'relative', maxHeight: '90vh', overflowY: 'auto' },
+  title: { fontSize: 20, fontWeight: 700, color: 'var(--brand-ink)', marginBottom: 4 },
   subtitle: { fontSize: 13, color: 'var(--text-muted)', marginBottom: 20 },
   closeBtn: { position: 'absolute', top: 16, right: 16, background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' },
   formRow: { display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 14 },
   formRowTwo: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 14 },
   label: { fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', letterSpacing: '0.3px' },
-  required: { color: '#ff3d5a', marginLeft: 2 },
-  input: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 42, boxSizing: 'border-box', colorScheme: 'dark' },
+  required: { color: '#E05563', marginLeft: 2 },
+  input: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--brand-ink)', fontSize: 14, outline: 'none', minHeight: 42, boxSizing: 'border-box', colorScheme: 'light' },
   selectRow: { display: 'flex', gap: 8, alignItems: 'stretch', flexWrap: 'wrap' },
-  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #00d4ff80', background: 'transparent', color: '#00d4ff', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' },
-  textarea: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'rgba(255,255,255,0.04)', border: '1px solid var(--glass-border)', color: 'var(--text-primary)', fontSize: 14, outline: 'none', minHeight: 70, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' },
+  addNewBtn: { padding: '0 14px', borderRadius: 10, border: '1px dashed #FEA61480', background: 'transparent', color: '#D98200', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' },
+  textarea: { width: '100%', padding: '10px 14px', borderRadius: 10, background: 'var(--bg-surface)', border: '1px solid var(--border-default)', color: 'var(--brand-ink)', fontSize: 14, outline: 'none', minHeight: 70, resize: 'vertical', fontFamily: 'inherit', boxSizing: 'border-box' },
   chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6 },
-  chip: (active, color) => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--glass-border)', background: active ? color + '18' : 'transparent', color: active ? color : 'var(--text-muted)', transition: 'all 0.15s' }),
-  submitBtn: (loading, success) => ({ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontWeight: 700, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, background: success ? 'rgba(0,230,118,0.2)' : 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: success ? '#00e676' : '#061218' }),
-  error: { color: '#ff3d5a', fontSize: 13, marginBottom: 12, textAlign: 'center' },
+  chip: (active, color = '#413C60') => ({ padding: '7px 14px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', border: '1px solid', borderColor: active ? color : 'var(--border-default)', background: active ? color + '22' : 'var(--bg-card)', color: active ? 'var(--brand-ink)' : 'var(--text-muted)', transition: 'all 0.15s' }),
+  submitBtn: (loading, success) => ({ width: '100%', padding: 14, borderRadius: 10, border: 'none', fontFamily: 'var(--font-head)', fontWeight: 600, fontSize: 15, cursor: loading ? 'not-allowed' : 'pointer', minHeight: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8, background: success ? 'rgba(87,193,165,0.2)' : 'var(--brand-navy)', color: success ? '#3E9E85' : '#fff' }),
+  error: { color: '#E05563', fontSize: 13, marginBottom: 12, textAlign: 'center' },
   // QR success modal
-  qrModal: { background: 'var(--bg-card)', border: '1px solid var(--glass-border)', borderRadius: 16, padding: 32, width: '100%', maxWidth: 420, position: 'relative', textAlign: 'center' },
-  qrWrap: { background: '#fff', padding: 20, borderRadius: 12, display: 'inline-block', marginBottom: 16, marginTop: 12 },
-  qrItemName: { fontSize: 18, fontWeight: 700, color: 'var(--text-primary)', marginTop: 4 },
+  qrModal: { background: 'var(--bg-card)', border: '1px solid var(--border-default)', borderRadius: 16, padding: 32, width: '100%', maxWidth: 420, position: 'relative', textAlign: 'center' },
+  qrWrap: { background: '#fff', padding: 20, borderRadius: 12, display: 'inline-block', marginBottom: 16, marginTop: 12, border: '1px solid var(--border-default)' },
+  qrItemName: { fontSize: 18, fontWeight: 700, color: 'var(--brand-ink)', marginTop: 4 },
   qrItemCat: { fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 },
   qrItemId: { fontSize: 11, color: 'var(--text-dim)', fontFamily: 'monospace', marginBottom: 20 },
   qrBtnRow: { display: 'flex', gap: 10 },
-  qrBtn: (primary) => ({ flex: 1, padding: 12, borderRadius: 10, border: primary ? 'none' : '1px solid var(--glass-border)', background: primary ? 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)' : 'rgba(255,255,255,0.05)', color: primary ? '#061218' : 'var(--text-primary)', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
+  qrBtn: (primary) => ({ flex: 1, padding: 12, borderRadius: 10, border: primary ? 'none' : '1px solid var(--border-default)', background: primary ? 'var(--brand-navy)' : 'var(--bg-surface)', color: primary ? '#fff' : 'var(--brand-ink)', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }),
 };
 
 const FALLBACK_CATEGORIES = ['Office Supplies', 'Kitchen/Break Room', 'Cleaning', 'Bathroom', 'CELPIP', 'Office Equipment', 'Supplies', 'Electronics', 'Safety / PPE', 'Documentation', 'Other'];
@@ -699,7 +699,7 @@ ${sortedCats.map(cat => `
     }
   };
 
-  const modeColor = mode === 'in' ? '#00e676' : '#ff3d5a';
+  const modeColor = mode === 'in' ? '#31D3AE' : '#E06B7A';
   const modeLabel = mode === 'in' ? 'Check In' : 'Check Out';
 
   if (loading && rawData.length === 0) {
@@ -737,25 +737,25 @@ ${sortedCats.map(cat => `
             <input style={s.searchInput} placeholder="Search inventory..." value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div style={s.modeToggle}>
-            <motion.button style={s.modeBtn(mode === 'in', '#00e676')} onClick={() => setMode('in')} whileTap={{ scale: 0.97 }}>
+            <motion.button style={s.modeBtn(mode === 'in', '#31D3AE')} onClick={() => setMode('in')} whileTap={{ scale: 0.97 }}>
               <ArrowDownCircle size={16} /> CHECK IN
             </motion.button>
-            <motion.button style={s.modeBtn(mode === 'out', '#ff3d5a')} onClick={() => setMode('out')} whileTap={{ scale: 0.97 }}>
+            <motion.button style={s.modeBtn(mode === 'out', '#E06B7A')} onClick={() => setMode('out')} whileTap={{ scale: 0.97 }}>
               <ArrowUpCircle size={16} /> CHECK OUT
             </motion.button>
           </div>
           <motion.button style={s.actionBtn} onClick={handleOpenScanner}
-            whileHover={{ scale: 1.04, boxShadow: '0 0 16px rgba(0,212,255,0.25)' }} whileTap={{ scale: 0.96 }}>
+            whileHover={{ scale: 1.04, boxShadow: 'var(--shadow-md)' }} whileTap={{ scale: 0.96 }}>
             <Camera size={18} /> Scan
           </motion.button>
           <motion.button style={s.actionBtn} onClick={handlePrintQR}
-            whileHover={{ scale: 1.04, boxShadow: '0 0 16px rgba(0,212,255,0.25)' }} whileTap={{ scale: 0.96 }}>
+            whileHover={{ scale: 1.04, boxShadow: 'var(--shadow-md)' }} whileTap={{ scale: 0.96 }}>
             <Printer size={18} /> Print QR Sheet
           </motion.button>
           <motion.button
-            style={{ ...s.actionBtn, background: 'linear-gradient(135deg, #00d4ff 0%, #00b8d9 100%)', color: '#061218', border: 'none', fontWeight: 700 }}
+            style={{ ...s.actionBtn, background: 'var(--brand-navy)', color: '#fff', border: 'none', fontFamily: 'var(--font-head)', fontWeight: 600 }}
             onClick={handleOpenCreate}
-            whileHover={{ scale: 1.04, boxShadow: '0 0 18px rgba(0,212,255,0.45)' }} whileTap={{ scale: 0.96 }}>
+            whileHover={{ scale: 1.04, boxShadow: 'var(--shadow-md)' }} whileTap={{ scale: 0.96 }}>
             <PlusCircle size={18} /> Create Item
           </motion.button>
         </motion.div>
@@ -766,7 +766,7 @@ ${sortedCats.map(cat => `
           <button type="button" style={s.filterChip(quickFilter === 'all')} onClick={() => setQuickFilter('all')}>
             All ({items.length})
           </button>
-          <button type="button" style={s.filterChip(quickFilter === 'low', '#ff3d5a')} onClick={() => setQuickFilter('low')}>
+          <button type="button" style={s.filterChip(quickFilter === 'low', '#E06B7A')} onClick={() => setQuickFilter('low')}>
             <AlertTriangle size={11} style={{ verticalAlign: 'middle', marginRight: 4 }} />Low Stock ({lowStockCount})
           </button>
           <select style={s.filterSelect} value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
@@ -775,7 +775,7 @@ ${sortedCats.map(cat => `
           </select>
           {(quickFilter !== 'all' || categoryFilter !== 'all' || search) && (
             <button type="button"
-              style={{ ...s.filterChip(false), color: '#ff3d5a', borderColor: 'rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.05)' }}
+              style={{ ...s.filterChip(false), color: '#E05563', borderColor: 'rgba(224,85,99,0.3)', background: 'rgba(224,85,99,0.05)' }}
               onClick={() => { setQuickFilter('all'); setCategoryFilter('all'); setSearch(''); }}>
               <X size={11} style={{ verticalAlign: 'middle', marginRight: 2 }} /> Clear
             </button>
@@ -796,20 +796,20 @@ ${sortedCats.map(cat => `
           </div>
         )}
         {grouped.map(([category, categoryItems], gIdx) => {
-          const catColor = categoryColor[category] || '#8b949e';
+          // Uniform navy for every category — seamless, no clashing per-category colours.
+          const catColor = '#413C60';
           const isCollapsed = !!collapsedGroups[category];
           const lowInGroup = categoryItems.filter((i) => i.threshold > 0 && i.quantity <= i.threshold).length;
           return (
             <div key={category}>
               <div
-                style={{ ...s.groupHeader, ...(gIdx === 0 ? s.groupHeaderFirst : {}) }}
+                style={{ ...s.groupHeader(catColor), ...(gIdx === 0 ? s.groupHeaderFirst : {}) }}
                 onClick={() => toggleGroup(category)}
               >
                 <motion.div animate={{ rotate: isCollapsed ? -90 : 0 }} style={s.groupChevron}>
                   <ChevronDown size={16} />
                 </motion.div>
                 <div style={s.groupHeaderTitle}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: catColor, flexShrink: 0 }} />
                   {category}
                 </div>
                 <span style={s.groupHeaderCount}>{categoryItems.length}</span>
@@ -834,11 +834,11 @@ ${sortedCats.map(cat => `
                         return (
                           <motion.div
                             key={item.id}
-                            style={{ ...s.card, borderColor: mode === 'out' ? 'rgba(255,61,90,0.15)' : 'var(--glass-border)' }}
+                            style={{ ...s.card, borderColor: mode === 'out' ? 'rgba(241,98,120,0.35)' : 'var(--border-default)' }}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: Math.min(i * 0.02, 0.2) }}
-                            whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(0,0,0,0.4)', borderColor: modeColor + '40' }}
+                            whileHover={{ y: -3, boxShadow: 'var(--shadow-md)', borderColor: modeColor + '80' }}
                             onClick={() => handleCardClick(item)}
                           >
                             <div style={s.cardHeaderRow}>
@@ -901,7 +901,7 @@ ${sortedCats.map(cat => `
               <div style={m.title}>{modeLabel}: {selectedItem.name}</div>
               <div style={m.subtitle}>{selectedItem.category} {selectedItem.unit ? `(${selectedItem.unit})` : ''}</div>
               <div style={m.currentQty}>
-                Current stock: <strong style={{ color: 'var(--text-primary)' }}>{selectedItem.quantity}</strong>
+                Current stock: <strong style={{ color: 'var(--brand-ink)' }}>{selectedItem.quantity}</strong>
                 {' → '}
                 <strong style={{ color: modeColor }}>
                   {mode === 'in' ? selectedItem.quantity + adjustQty : Math.max(0, selectedItem.quantity - adjustQty)}
@@ -923,12 +923,12 @@ ${sortedCats.map(cat => `
               <motion.button
                 style={{
                   width: '100%', padding: 12, marginTop: 10, borderRadius: 10,
-                  background: 'transparent', border: '1px solid var(--glass-border)',
-                  color: 'var(--text-muted)', fontWeight: 600, fontSize: 13,
+                  background: 'var(--bg-card)', border: '1px solid var(--border-default)',
+                  color: 'var(--brand-navy)', fontWeight: 600, fontSize: 13,
                   cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                 }}
                 onClick={handleOpenEdit}
-                whileHover={{ scale: 1.01, borderColor: '#00d4ff', color: '#00d4ff' }}
+                whileHover={{ scale: 1.01, borderColor: 'var(--brand-navy)', color: 'var(--brand-navy)' }}
                 whileTap={{ scale: 0.99 }}>
                 <Pencil size={14} /> Edit Full Details
               </motion.button>
@@ -985,19 +985,19 @@ ${sortedCats.map(cat => `
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewCategory('create'); } }}
                       />
                       <button type="button"
-                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
                         onClick={() => handleAddNewCategory('create')} disabled={addingCategory}>
                         {addingCategory ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                       </button>
                       <button type="button"
-                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                         onClick={() => { setShowAddCategory(null); setNewCategoryName(''); setAddCategoryError(null); }} disabled={addingCategory}>
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {addCategoryError && showAddCategory === 'create' && (
-                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
+                    <div style={{ color: '#E05563', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
                   )}
                 </div>
 
@@ -1060,19 +1060,19 @@ ${sortedCats.map(cat => `
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewVendor('create'); } }}
                       />
                       <button type="button"
-                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
                         onClick={() => handleAddNewVendor('create')} disabled={addingVendor}>
                         {addingVendor ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                       </button>
                       <button type="button"
-                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                         onClick={() => { setShowAddVendor(null); setNewVendorName(''); setAddVendorError(null); }} disabled={addingVendor}>
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {addVendorError && showAddVendor === 'create' && (
-                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addVendorError}</div>
+                    <div style={{ color: '#E05563', fontSize: 12, marginTop: 6 }}>{addVendorError}</div>
                   )}
                 </div>
 
@@ -1111,7 +1111,7 @@ ${sortedCats.map(cat => `
             onClick={(e) => e.target === e.currentTarget && setNewItem(null)}>
             <motion.div style={cr.qrModal} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}>
               <button style={cr.closeBtn} onClick={() => setNewItem(null)}><X size={20} /></button>
-              <div style={{ color: '#00e676', fontSize: 13, fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 }}>
+              <div style={{ color: '#3E9E85', fontSize: 13, fontWeight: 700, letterSpacing: 0.5, marginBottom: 4 }}>
                 <Check size={14} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 4 }} />
                 ITEM CREATED
               </div>
@@ -1143,7 +1143,7 @@ ${sortedCats.map(cat => `
             <motion.div style={cr.modal} initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}>
               <button style={cr.closeBtn} onClick={handleCloseEdit} disabled={saving || deleting}><X size={20} /></button>
               <div style={cr.title}>
-                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#00d4ff' }} />
+                <Pencil size={18} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 8, color: '#FEA614' }} />
                 Edit Item
               </div>
               <div style={cr.subtitle}>Update any field. Fields marked with <span style={cr.required}>*</span> are required.</div>
@@ -1184,19 +1184,19 @@ ${sortedCats.map(cat => `
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewCategory('edit'); } }}
                       />
                       <button type="button"
-                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingCategory ? 'not-allowed' : 'pointer' }}
                         onClick={() => handleAddNewCategory('edit')} disabled={addingCategory}>
                         {addingCategory ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                       </button>
                       <button type="button"
-                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                         onClick={() => { setShowAddCategory(null); setNewCategoryName(''); setAddCategoryError(null); }} disabled={addingCategory}>
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {addCategoryError && showAddCategory === 'edit' && (
-                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
+                    <div style={{ color: '#E05563', fontSize: 12, marginTop: 6 }}>{addCategoryError}</div>
                   )}
                 </div>
 
@@ -1259,19 +1259,19 @@ ${sortedCats.map(cat => `
                         onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddNewVendor('edit'); } }}
                       />
                       <button type="button"
-                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#00d4ff', color: '#061218', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
+                        style={{ padding: '8px 14px', borderRadius: 8, border: 'none', background: '#413C60', color: '#fff', fontWeight: 700, fontSize: 12, cursor: addingVendor ? 'not-allowed' : 'pointer' }}
                         onClick={() => handleAddNewVendor('edit')} disabled={addingVendor}>
                         {addingVendor ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> : <Check size={12} />}
                       </button>
                       <button type="button"
-                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
+                        style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer' }}
                         onClick={() => { setShowAddVendor(null); setNewVendorName(''); setAddVendorError(null); }} disabled={addingVendor}>
                         <X size={12} />
                       </button>
                     </div>
                   )}
                   {addVendorError && showAddVendor === 'edit' && (
-                    <div style={{ color: '#ff3d5a', fontSize: 12, marginTop: 6 }}>{addVendorError}</div>
+                    <div style={{ color: '#E05563', fontSize: 12, marginTop: 6 }}>{addVendorError}</div>
                   )}
                 </div>
 
@@ -1299,32 +1299,32 @@ ${sortedCats.map(cat => `
                 </motion.button>
 
                 {/* Delete section */}
-                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--glass-border)' }}>
+                <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid var(--border-default)' }}>
                   {!showDeleteConfirm ? (
                     <button type="button"
-                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(255,61,90,0.3)', background: 'rgba(255,61,90,0.08)', color: '#ff3d5a', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                      style={{ width: '100%', padding: 12, borderRadius: 10, border: '1px solid rgba(224,85,99,0.3)', background: 'rgba(224,85,99,0.08)', color: '#E05563', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                       onClick={() => setShowDeleteConfirm(true)} disabled={saving}>
                       <Trash2 size={14} /> Delete This Item
                     </button>
                   ) : (
-                    <div style={{ background: 'rgba(255,61,90,0.08)', border: '1px solid rgba(255,61,90,0.3)', borderRadius: 10, padding: 14 }}>
-                      <div style={{ color: '#ff3d5a', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <div style={{ background: 'rgba(224,85,99,0.08)', border: '1px solid rgba(224,85,99,0.3)', borderRadius: 10, padding: 14 }}>
+                      <div style={{ color: '#E05563', fontSize: 13, fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
                         <AlertTriangle size={14} /> This cannot be undone
                       </div>
                       <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 10 }}>
-                        Type <strong style={{ color: 'var(--text-primary)' }}>{editingItemName}</strong> below to confirm deletion:
+                        Type <strong style={{ color: 'var(--brand-ink)' }}>{editingItemName}</strong> below to confirm deletion:
                       </div>
                       <input style={{ ...cr.input, marginBottom: 10 }} placeholder={editingItemName}
                         value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} disabled={deleting} />
                       <div style={{ display: 'flex', gap: 8 }}>
                         <button type="button"
-                          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--glass-border)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: '1px solid var(--border-default)', background: 'transparent', color: 'var(--text-muted)', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
                           onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(''); setSaveError(null); }}
                           disabled={deleting}>
                           Cancel
                         </button>
                         <button type="button"
-                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#ff3d5a', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deleting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                          style={{ flex: 1, padding: 10, borderRadius: 8, border: 'none', background: '#E05563', color: '#fff', fontWeight: 700, fontSize: 13, cursor: deleting ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
                           onClick={handleDelete}
                           disabled={deleting || deleteConfirmText.trim().toLowerCase() !== editingItemName.trim().toLowerCase()}>
                           {deleting ? <><Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Deleting...</> : <><Trash2 size={14} /> Delete Permanently</>}
