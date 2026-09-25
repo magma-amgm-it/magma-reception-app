@@ -20,6 +20,7 @@ const RECEPTION_EMAILS = [
   'kenza.trabelsi@magma-amgm.org',
   'audra.colebrooke@magma-amgm.org',
   'nataliia.mospak@magma-amgm.org',
+  'suzelle.gauvin@magma-amgm.org',
 ];
 
 const normalize = (email) => (email || '').trim().toLowerCase();
