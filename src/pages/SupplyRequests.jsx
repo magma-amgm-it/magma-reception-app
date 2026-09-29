@@ -94,6 +94,8 @@ const s = {
   errorWrap: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 'var(--space-12)', gap: 'var(--space-4)', color: '#E05563' },
   retryBtn: { padding: 'var(--space-3) var(--space-5)', borderRadius: 'var(--radius-md)', background: 'rgba(241,98,120,0.12)', border: '1px solid rgba(241,98,120,0.3)', color: '#E05563', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 'var(--space-2)' },
   dropHint: { fontSize: 10, color: 'var(--text-dim)', textAlign: 'center', marginBottom: 12 },
+  moveError: { display: 'flex', alignItems: 'center', gap: 'var(--space-2)', padding: 'var(--space-3) var(--space-4)', marginBottom: 'var(--space-4)', borderRadius: 'var(--radius-md)', background: 'rgba(241,98,120,0.12)', border: '1px solid rgba(241,98,120,0.3)', color: '#E05563', fontSize: 'var(--text-sm)' },
+  moveErrorClose: { background: 'none', border: 'none', color: '#E05563', cursor: 'pointer', padding: 4, display: 'flex' },
 };
 
 function formatDate(dateStr) {
@@ -177,6 +179,7 @@ export default function SupplyRequests() {
   // ── Drag state ──
   const [activeId, setActiveId] = useState(null);
   const [updating, setUpdating] = useState(null); // id of card being updated
+  const [moveError, setMoveError] = useState(null); // shown when a drag fails to save
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -275,6 +278,11 @@ export default function SupplyRequests() {
       refresh();
     } catch (err) {
       console.error('Failed to update status:', err);
+      // Tell the user instead of silently snapping the card back
+      const denied = /access denied/i.test(err?.message || '');
+      setMoveError(denied
+        ? `Couldn't move "${card.title}" — your account can only update requests you created. Ask IT for reception access.`
+        : `Couldn't move "${card.title}": ${err?.message || 'unknown error'}`);
       // refresh to revert optimistic update
       refresh();
     } finally {
@@ -332,6 +340,14 @@ export default function SupplyRequests() {
         </motion.div>
 
         <div style={s.dropHint}>Drag cards between columns to update status</div>
+
+        {moveError && (
+          <div style={s.moveError} role="alert">
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
+            <span style={{ flex: 1 }}>{moveError}</span>
+            <button style={s.moveErrorClose} onClick={() => setMoveError(null)} aria-label="Dismiss"><X size={14} /></button>
+          </div>
+        )}
 
         {/* Kanban Board with DnD */}
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
