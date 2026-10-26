@@ -2,20 +2,44 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>magma-reception-app</title>
-    <!-- Microsoft Clarity — session replay + heatmaps (free tier) -->
-    <script type="text/javascript">
-      (function(c,l,a,r,i,t,y){
-          c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-          t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-          y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-      })(window, document, "clarity", "script", "xbnoq84hwi");
-    </script>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Reception System has moved to SharePoint</title>
+    <style>
+      :root { --ink: #111111; --muted: #5f5f5f; --line: #e6e6e6; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+             background: #ffffff; color: var(--ink);
+             font-family: Inter, "Segoe UI", system-ui, -apple-system, Arial, sans-serif; }
+      main { width: 100%; max-width: 460px; }
+      .mark { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 10px;
+              background: var(--ink); color: #fff; font-weight: 700; font-size: 18px; }
+      h1 { margin: 20px 0 8px; font-size: 28px; line-height: 1.2; }
+      p { margin: 0 0 24px; color: var(--muted); font-size: 16px; line-height: 1.5; }
+      .go { display: inline-block; padding: 12px 20px; border-radius: 10px; background: var(--ink); color: #fff;
+            font-weight: 600; font-size: 16px; text-decoration: none; }
+      .go:focus-visible { outline: 3px solid #4c7cf0; outline-offset: 2px; }
+      .small { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; }
+      .small a { color: var(--ink); }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <main>
+      <span class="mark" aria-hidden="true">M</span>
+      <h1>Reception System has moved to SharePoint</h1>
+      <p>Supply requests, inventory and mail pickup now live on the MAGMA portal. Same lists, same data, and you sign in with your MAGMA account.</p>
+      <a class="go" id="go" href="https://magmaamgmorg.sharepoint.com/SitePages/Reception.aspx">Open Reception System</a>
+      <p class="small">You'll be taken there in a few seconds. On the portal it's under <strong>Employee Self Service → Request Supplies</strong>.</p>
+    </main>
+    <script>
+      // Old app paths (/magma-reception-app/requests, /inventory, /mail, /admin) open the same screen on the new page.
+      (function () {
+        var base = 'https://magmaamgmorg.sharepoint.com/SitePages/Reception.aspx';
+        var m = /\/magma-reception-app\/(requests|inventory|mail|admin)\b/i.exec(location.pathname);
+        var url = m ? base + '?view=' + m[1].toLowerCase() : base;
+        document.getElementById('go').href = url;
+        setTimeout(function () { location.replace(url); }, 4000);
+      })();
+    </script>
   </body>
 </html>
